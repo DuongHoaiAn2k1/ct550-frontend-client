@@ -46,7 +46,7 @@ const routes = [
   {
     path: "/tokenProcess",
     name: "token",
-    component: () => import("@/components/ProcessToken.vue"),
+    component: () => import("@/helps/Token/TokenProcess.vue"),
   },
   {
     path: "/payment",

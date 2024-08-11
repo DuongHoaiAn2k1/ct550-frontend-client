@@ -1,0 +1,111 @@
+<template>
+    <div class="container bootstrap snippets bootdey">
+        <!-- Review Form -->
+        <div v-show="!isReviewProduct && isBuyingProduct" class="row mt-2">
+            <div class="col-3"></div>
+            <div class="col-6">
+                <h2>Cho chúng tôi xin đánh giá về sản phẩm</h2>
+                <div class="mb-3">
+                    <el-rate v-model="rateComment" allow-half />
+                </div>
+                <div class="mb-3">
+                    <label for="comment">Đánh giá:</label>
+                    <textarea class="form-control" id="comment" rows="3" v-model="commentValue"></textarea>
+                </div>
+                <button @click="handleComment" class="btn btn-dark">Đánh giá</button>
+            </div>
+            <div class="col-3"></div>
+        </div>
+
+        <!-- Reviews List -->
+        <div v-show="dataReviewByProductLength !== 0" class="row mt-2">
+            <div class="panel panel-default widget">
+                <div class="panel-heading">
+                    <span class="glyphicon glyphicon-comment"></span>
+                    <h3 class="panel-title">Các phản hồi của khách hàng</h3>
+                </div>
+                <div class="panel-body">
+                    <ul class="list-group" v-for="data in listCommentPagination" :key="data.review_id">
+                        <li class="list-group-item">
+                            <div class="row">
+                                <div class="col-xs-10 col-md-11">
+                                    <div>
+                                        <a href="#">
+                                            {{ data.user.name }}
+                                            <el-rate v-model="data.rating" allow-half />
+                                        </a>
+                                        <div class="mic-info">Thời gian: {{ convertTime(data.created_at) }}</div>
+                                    </div>
+                                    <div class="comment-text">{{ data.comment }}</div>
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                    <div class="text-end">
+                        <el-pagination v-model:current-page="currentPage" @current-change="handleCurrentChange" small
+                            background layout="prev, pager, next"
+                            :total="Math.ceil(dataReviewByProductLength / pageSize) * 10" class="mt-4" />
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div v-show="dataReviewByProductLength === 0">
+            <p class="text-center">Không có sản phẩm nào</p>
+        </div>
+    </div>
+</template>
+
+<script setup>
+import { formatCurrency, covertTime } from '@/helpers/UtilHelpers';
+
+// Define props
+const props = defineProps({
+    isReviewProduct: {
+        type: Boolean,
+        required: true
+    },
+    isBuyingProduct: {
+        type: Boolean,
+        required: true
+    },
+    rateComment: {
+        type: Number,
+        required: true
+    },
+    commentValue: {
+        type: String,
+        required: true
+    },
+    dataReviewByProductLength: {
+        type: Number,
+        required: true
+    },
+    listCommentPagination: {
+        type: Array,
+        required: true
+    },
+    currentPage: {
+        type: Number,
+        required: true
+    },
+    pageSize: {
+        type: Number,
+        required: true
+    }
+});
+
+// Define emits
+const emit = defineEmits(['handleComment', 'handleCurrentChange']);
+
+</script>
+
+<style scoped>
+/* Include necessary styles here or move to a global stylesheet */
+.panel-body {
+    padding: 15px;
+}
+
+.comment-text {
+    margin-top: 10px;
+}
+</style>

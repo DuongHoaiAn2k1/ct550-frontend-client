@@ -9,6 +9,10 @@ export const useCategoryStore = defineStore('category', {
  
   getters: {
     getListCategory: (state) => state.listCategory,
+    getCategoryNameById: (state) => (category_id) => {
+      const category = state.listCategory.find(cat => cat.category_id == category_id);
+      return category ? category.category_name : null;
+    },
   },
 
   actions: {

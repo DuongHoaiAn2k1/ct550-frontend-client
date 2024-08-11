@@ -2,7 +2,7 @@ import { ref, computed } from "vue";
 
 export default function usePulseLoader() {
   const loading = ref(true);
-  const color = ref("#409eff");
+  const color = ref("#234A2B");
   const size = ref("15px");
   const margin = ref("2px");
   const radius = ref("100%");

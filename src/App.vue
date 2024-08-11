@@ -10,12 +10,12 @@
 <script setup>
 import { ref, onMounted, watch } from "vue";
 import AppHeader from "./components/layouts/AppHeader.vue";
-// import AppHeader from "@/components/AppHeader.vue";
 import AppFooter from "./components/layouts/AppFooter.vue";
 import { useCartStore } from "@/stores/cart";
 import { useAuthStore } from "@/stores/auth";
-import { useFavoriteStore } from "./stores/favorite";
+import { useFavoriteStore } from "@/stores/favorite";
 import { useProductStore } from "@/stores/product";
+import { useCategoryStore } from "@/stores/category";
 
 const number = ref(0);
 
@@ -23,6 +23,7 @@ const cartStore = useCartStore();
 const authStore = useAuthStore();
 const favoriteStore = useFavoriteStore();
 const productStore = useProductStore();
+const categoryStore = useCategoryStore();
 
 
 const updateFishListWithLikes = () => {
@@ -43,12 +44,15 @@ const updateShrimpListWithLikes = () => {
   });
 };
 onMounted(async () => {
+  if (categoryStore.listCategory.lenght == 0) {
+    await categoryStore.fetchListCategory();
+  }
+
   if (authStore.isUserLoggedIn == true) {
     await cartStore.fetchCartCount();
     number.value = cartStore.count;
     await productStore.fetchListFish();
     await productStore.fetchListShrimp();
-    await favoriteStore.fetchListFavorite();
     await favoriteStore.fetchListFavorite().finally(() => {
       updateFishListWithLikes();
       updateShrimpListWithLikes();

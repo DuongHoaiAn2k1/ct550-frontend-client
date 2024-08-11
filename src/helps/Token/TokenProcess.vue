@@ -1,60 +1,43 @@
-<template>
-    <!-- Nội dung của template nếu có -->
-</template>
+<template></template>
 
 <script setup>
-import { onMounted } from "vue";
-import { ElLoading, ElNotification } from "element-plus";
-import { useRouter } from "vue-router";
+import authService from "@/services/auth.service";
 import { useAuthStore } from "@/stores/auth";
+import { onMounted } from "vue";
+import { ElLoading } from "element-plus";
+import { useRouter } from "vue-router";
 
-// Khởi tạo các biến và dịch vụ
-const authStore = useAuthStore();
 const router = useRouter();
+const authStore = useAuthStore();
+const handlRefresh = async () => {
+    try {
+        const refreshToken = authStore.refreshTokenUser;
+        const response = await authService.refresh({
+            refresh_Token: refreshToken,
+        });
 
-// Hàm để hiển thị thông báo thành công
-const showLoginSuccess = () => {
-    ElNotification({
-        title: 'Đăng nhập thành công',
-        message: 'Đăng nhập thành công với Google. Đang chuyển trang...',
-        type: 'success',
-    });
-};
-
-// Hàm để hiển thị thông báo cảnh báo
-const showLoginWarning = () => {
-    ElNotification({
-        title: 'Đăng nhập thất bại',
-        message: 'Đăng nhập thất bại hoặc không có thông tin đăng nhập. Vui lòng thử lại.',
-        type: 'warning',
-    });
-};
-
-// Hàm để xử lý đăng nhập
-const handleLogin = (accessToken, refreshToken, userId) => {
-    if (accessToken && refreshToken && userId) {
-        // Lưu token vào store hoặc dịch vụ
-        authStore.setTokens({ accessToken, refreshToken });
-        authStore.setUserId(userId);
-
-        showLoginSuccess();
-
-        // Chuyển hướng đến trang chính hoặc trang mong muốn
-        router.push({ name: 'home' }); // Hoặc trang bạn muốn chuyển đến
-    } else {
-        showLoginWarning();
-        // Có thể chuyển hướng về trang đăng nhập hoặc trang lỗi
-        router.push({ name: 'login' });
+        authStore.login(
+            response.access_token,
+            response.refresh_token,
+            response.user_id
+        );
+        console.log("After refresh Token: ", response);
+        localStorage.setItem("processRefreshToken", false);
+        router.push({ name: "home" });
+    } catch (error) {
+        console.log(error.response);
     }
 };
 
-// Phân tích URL và lấy các tham số
 onMounted(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const accessToken = urlParams.get('access_token');
-    const refreshToken = urlParams.get('refresh_token');
-    const userId = urlParams.get('user_id');
-
-    handleLogin(accessToken, refreshToken, userId);
+    const loading = ElLoading.service({
+        lock: true,
+        text: "Đang đăng nhập lại...",
+        background: "rgba(0,0,0, 0.7)",
+    });
+    setTimeout(() => {
+        handlRefresh();
+        loading.close();
+    }, 2000);
 });
 </script>

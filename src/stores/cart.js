@@ -15,7 +15,7 @@ export const useCartStore = defineStore("cart", {
         const response = await cartService.count();
         this.count = response.number;
       } catch (error) {
-        console.error("Failed to fetch cart count:", error);
+        console.log(error);
       }
     },
     deleteCart() {

@@ -7,7 +7,7 @@
             <!-- Background image for card set in CSS! -->
           </div>
           <div class="card-body p-4 p-sm-5">
-            <h2 class="card-title text-center mb-5 fw-light">Đăng nhập</h2>
+            <h2 class="card-title text-center mb-5" style="color: #234A2B; font-weight: 600;">Đăng nhập</h2>
             <form @submit="submitLogin">
               <div class="form-floating mb-3">
                 <input type="email" class="form-control" id="floatingInputEmail" placeholder="name@example.com"
@@ -23,7 +23,8 @@
                 <span class="text-danger">{{ passwordErrors }}</span>
               </div>
               <div class="d-grid mb-2">
-                <button class="btn btn-lg btn-primary btn-login fw-bold text-uppercase" type="submit">
+                <button class="btn btn-lg btn-login fw-bold text-uppercase" type="submit"
+                  style="background-color: #234A2B; color: white;">
                   Đăng nhập
                 </button>
               </div>
@@ -57,11 +58,10 @@ import { ref, reactive, onMounted } from "vue";
 import { ElLoading, ElNotification } from "element-plus";
 import { useAuthStore } from "@/stores/auth";
 import { useProductStore } from "@/stores/product";
-import userService from "@/services/user.service";
 import authService from "@/services/auth.service";
 import { useRouter } from "vue-router";
-import { ElMessage } from "element-plus";
 import { h } from "vue";
+import { showSuccess, showWarning } from "@/helpers/NotificationHelper";
 
 const authStore = useAuthStore();
 const productStore = useProductStore();
@@ -112,14 +112,14 @@ const submitLogin = async (event) => {
           const user_id = response.user_id;
           authStore.login(access_token, refresh_token, user_id);
           // Cookies.set("token", token, { expires: 1 });
-          showLoginSuccess();
+          showSuccess("Đăng nhập thành công");
           setTimeout(() => {
             router.push({ name: "home" });
           }, 1000);
         } catch (error) {
           console.log(error.response);
           if (error.response.data.error === "Email or Password is incorrect") {
-            showLoginWarning();
+            showWarning("Email hoặc mật không chính xác");
           }
         }
       };
@@ -143,21 +143,6 @@ const submitLogin = async (event) => {
     });
 };
 
-const showLoginSuccess = () => {
-  ElMessage({
-    message: "Đăng nhập thành công.",
-    type: "success",
-  });
-};
-
-const showLoginWarning = () => {
-  ElNotification({
-    title: "Warning",
-    message: "Email hoặc mật khẩu không chính xác",
-    type: "warning",
-  });
-};
-
 const notificationLogin = () => {
   ElNotification({
     title: "Thông báo",
@@ -178,7 +163,7 @@ const loginWithGoogle = () => {
       const { access_token, refresh_token, user_id } = event.data;
       newWindow.close();
       authStore.login(access_token, refresh_token, user_id);
-      showLoginSuccess();
+      showSuccess("Đăng nhập thành công");
       setTimeout(() => {
         router.push({ name: 'home' });
       }, 1000);
@@ -193,7 +178,7 @@ const loginWithGoogle = () => {
       const user_id = localStorage.getItem('user_id');
 
       if (!access_token || !refresh_token || !user_id) {
-        showLoginWarning();
+        showWarning("Email hoặc mật khẩu không chính xác");
       }
     }
   }, 1000);

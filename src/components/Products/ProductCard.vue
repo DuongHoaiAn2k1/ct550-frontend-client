@@ -1,13 +1,13 @@
 <template>
     <div class="card mx-2">
         <div class="image-container">
-
-            <img :src="image" />
-
+            <router-link :to="{ name: 'product-detail', params: { id: productId } }">
+                <img :src="image" />
+            </router-link>
             <div class="price">{{ formatCurrency(price) }}</div>
         </div>
         <label class="favorite">
-            <input checked="" type="checkbox">
+            <input type="checkbox" :checked="liked" @click="handleCreateProductLike(productId)">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#000000">
                 <path
                     d="M12 20a1 1 0 0 1-.437-.1C11.214 19.73 3 15.671 3 9a5 5 0 0 1 8.535-3.536l.465.465.465-.465A5 5 0 0 1 21 9c0 6.646-8.212 10.728-8.562 10.9A1 1 0 0 1 12 20z">
@@ -43,7 +43,7 @@
 
         <div class="button-container">
             <button class="buy-button button">Mua ngay</button>
-            <button class="cart-button button">
+            <button class="cart-button button" @click="addToCart(productId)">
                 <svg viewBox="0 0 27.97 25.074" xmlns="http://www.w3.org/2000/svg">
                     <path
                         d="M0,1.175A1.173,1.173,0,0,1,1.175,0H3.4A2.743,2.743,0,0,1,5.882,1.567H26.01A1.958,1.958,0,0,1,27.9,4.035l-2.008,7.459a3.532,3.532,0,0,1-3.4,2.61H8.36l.264,1.4a1.18,1.18,0,0,0,1.156.955H23.9a1.175,1.175,0,0,1,0,2.351H9.78a3.522,3.522,0,0,1-3.462-2.865L3.791,2.669A.39.39,0,0,0,3.4,2.351H1.175A1.173,1.173,0,0,1,0,1.175ZM6.269,22.724a2.351,2.351,0,1,1,2.351,2.351A2.351,2.351,0,0,1,6.269,22.724Zm16.455-2.351a2.351,2.351,0,1,1-2.351,2.351A2.351,2.351,0,0,1,22.724,20.373Z"
@@ -56,9 +56,17 @@
 </template>
 
 <script setup>
+import { addToCart } from '../../helpers/CartHelper';
 import { formatCurrency } from '../../helpers/UtilHelper';
 
+const emit = defineEmits(['handleCreateProductLike']);
+
+
 const props = defineProps({
+    productId: {
+        type: Number,
+        required: true
+    },
     productName: {
         type: String,
         required: true
@@ -74,8 +82,19 @@ const props = defineProps({
     image: {
         type: String,
         required: true
+    },
+    liked: {
+        type: Boolean,
+        required: true
     }
 });
+
+const handleCreateProductLike = () => {
+
+    emit('handleCreateProductLike', props.productId, props.liked);
+    props.liked = !props.liked;
+}
+
 
 console.log("props in product card: ", props);
 </script>

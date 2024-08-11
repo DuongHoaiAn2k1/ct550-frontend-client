@@ -14,20 +14,26 @@
                     </button>
                     <div class="collapse navbar-collapse" id="ftco-nav">
                         <ul class="navbar-nav m-auto">
-                            <li class="nav-item active"><a href="#" class="nav-link text-content">Trang chủ</a></li>
+                            <li class="nav-item active"><router-link :to="{ name: 'home' }"
+                                    class="nav-link text-content">Trang chủ</router-link></li>
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle text-content" href="#" id="dropdown04"
                                     data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Đặc sản</a>
                                 <div class="dropdown-menu design-dropdown" aria-labelledby="dropdown04">
-                                    <a class="dropdown-item" href="#" v-for="category in categoryStore.listCategory"
+                                    <router-link :to="{ name: 'product', params: { id: category.category_id } }"
+                                        class="dropdown-item" v-for="category in categoryStore.listCategory"
                                         :key="category.category_id">{{
-                                            category.category_name }}</a>
+                                            category.category_name }}</router-link>
                                 </div>
                             </li>
-                            <li class="nav-item text-content"><a href="#" class="nav-link">Ẩm thực</a></li>
-                            <li class="nav-item text-content"><a href="#" class="nav-link">Hướng dẫn mua hàng</a></li>
-                            <li class="nav-item text-content"><a href="#" class="nav-link">Chính sách</a></li>
-                            <li class="nav-item text-content"><a href="#" class="nav-link">Liên hệ</a></li>
+                            <li class="nav-item text-content"><router-link :to="{ name: 'food' }" class="nav-link">Ẩm
+                                    thực</router-link></li>
+                            <li class="nav-item text-content"><router-link :to="{ name: 'guide' }"
+                                    class="nav-link">Hướng dẫn mua hàng</router-link></li>
+                            <li class="nav-item text-content"><router-link :to="{ name: 'shipping' }"
+                                    class="nav-link">Chính sách</router-link></li>
+                            <li class="nav-item text-content"><router-link :to="{ name: 'contact' }"
+                                    class="nav-link">Liên hệ</router-link></li>
                         </ul>
                     </div>
                 </div>
@@ -46,13 +52,13 @@
 
                     <div class="d-flex">
                         <!-- Cart -->
-                        <router-link :to="{ name: 'cart' }" class="text-reset me-5" href="#">
+                        <router-link :to="{ name: 'cart' }" class="text-reset me-4" href="#">
                             <span><i class="fas fa-shopping-cart cart-design"></i></span>
                             <span class="badge rounded-pill badge-notification bg-danger sub-cart-design">{{ number
                                 }}</span>
                         </router-link>
 
-                        <div class="me-5">
+                        <div class="me-4">
                             <a id="navbarUserDropdown" @click="showNotificationBox"><i class="fa-solid fa-bell"></i></a>
                             <div v-if="isNotiticationBox" class="notification-container">
                                 <Notification />
@@ -64,19 +70,19 @@
                             <i class="fas fa-user dropdown-toggle user-design" data-bs-toggle="dropdown"
                                 aria-expanded="false"></i>
                             <ul class="dropdown-menu">
-                                <li v-show="!isLogin">
+                                <li v-show="!authStore.isUserLoggedIn">
                                     <router-link :to="{ name: 'login' }" class="dropdown-item">Đăng
                                         nhập</router-link>
                                 </li>
-                                <li v-show="!isLogin">
+                                <li v-show="!authStore.isUserLoggedIn">
                                     <router-link :to="{ name: 'register' }" class="dropdown-item">Đăng
                                         ký</router-link>
                                 </li>
-                                <li v-show="isLogin">
+                                <li v-show="authStore.isUserLoggedIn">
                                     <router-link :to="{ name: 'profile' }" class="dropdown-item">Tài
                                         khoản</router-link>
                                 </li>
-                                <li v-show="isLogin" @click="handleLogOut">
+                                <li v-show="authStore.isUserLoggedIn" @click="handleLogOut">
                                     <button class="dropdown-item">Đăng xuất</button>
                                 </li>
                             </ul>
@@ -94,16 +100,45 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted, computed, watch } from 'vue';
 import Notification from '../Notifications/Notification.vue';
 import { useCategoryStore } from '../../stores/category';
+import { useAuthStore } from "../../stores/auth";
+import { useCartStore } from '../../stores/cart';
+import { showSuccessMessage } from "../../helpers/NotificationHelper";
+import { useRouter } from "vue-router";
+const router = useRouter();
 
 const categoryStore = useCategoryStore();
+const authStore = useAuthStore();
+const cartStore = useCartStore();
 const isNotiticationBox = ref(false);
 const showNotificationBox = () => {
     isNotiticationBox.value = !isNotiticationBox.value;
 }
 
+const number = computed(() => {
+    return cartStore.count;
+})
+
+const handleLogOut = () => {
+    authStore.logout();
+    showSuccessMessage("Đăng xuất thành công");
+}
+
+onMounted(async () => {
+
+    await categoryStore.fetchListCategory();
+
+    if (localStorage.getItem("processRefreshToken") == "true") {
+        router.push({ name: "token" });
+    }
+
+});
+
+// watch(cartStore.count, () => {
+//     number.value = cartStore.count;
+// });
 </script>
 
 <style scoped>

@@ -1,13 +1,12 @@
+import Cookies from 'js-cookie';
 import { defineStore } from "pinia";
 
 export const useAuthStore = defineStore("userLogin", {
   state: () => ({
-    isUserLoggedIn: JSON.parse(
-      localStorage.getItem("isUserLoggedIn") || "false"
-    ),
-    accessTokenUser: localStorage.getItem("accessTokenUser") || null,
-    refreshTokenUser: localStorage.getItem("refreshTokenUser") || null,
-    user_id: localStorage.getItem("user_id"),
+    isUserLoggedIn: JSON.parse(Cookies.get("isUserLoggedIn") || "false"),
+    accessTokenUser: Cookies.get("accessTokenUser") || null,
+    refreshTokenUser: Cookies.get("refreshTokenUser") || null,
+    user_id: Cookies.get("user_id"),
   }),
 
   actions: {
@@ -16,10 +15,10 @@ export const useAuthStore = defineStore("userLogin", {
       this.accessTokenUser = access_token;
       this.refreshTokenUser = refresh_token;
       this.user_id = user_id;
-      localStorage.setItem("isUserLoggedIn", true);
-      localStorage.setItem("accessTokenUser", access_token);
-      localStorage.setItem("refreshTokenUser", refresh_token);
-      localStorage.setItem("user_id", user_id);
+      Cookies.set("isUserLoggedIn", true, {expires: 7});
+      Cookies.set("accessTokenUser", access_token, { secure: true, expires: 7});
+      Cookies.set("refreshTokenUser", refresh_token, { secure: true, expires: 7});
+      Cookies.set("user_id", user_id, { expires: 7});
     },
 
     logout() {
@@ -27,10 +26,10 @@ export const useAuthStore = defineStore("userLogin", {
       this.accessTokenUser = null;
       this.refreshTokenUser = null;
       this.user_id = null;
-      localStorage.setItem("isUserLoggedIn", "");
-      localStorage.removeItem("accessTokenUser");
-      // localStorage.removeItem("refreshTokenUser");
-      localStorage.removeItem("user_id");
+      Cookies.set("isUserLoggedIn", false, {expires: 7});
+      Cookies.remove("accessTokenUser");
+      Cookies.remove("refreshTokenUser");
+      Cookies.remove("user_id");
     },
   },
 });

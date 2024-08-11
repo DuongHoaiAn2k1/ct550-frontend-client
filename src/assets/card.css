@@ -69,9 +69,9 @@
   padding: 14px;
 }
 
-.card h2 {
+/* .card h2 {
   font-size: 1rem;
-}
+} */
 
 .card:hover {
   transform: scale(1.02);

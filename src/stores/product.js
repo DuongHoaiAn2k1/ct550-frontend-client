@@ -24,7 +24,7 @@ export const useProductStore = defineStore("product", {
           category_name: "Khô cá Cà Mau",
         });
         this.fishList = response.data.slice(0, 5);
-        console.log("Cá: ", response);
+        console.log("Cá: ", this.fishList);
       } catch (error) {
         console.log(error.response);
       }
@@ -41,5 +41,21 @@ export const useProductStore = defineStore("product", {
         console.log(error.response);
       }
     },
+
+    getProductById(product_id) {
+      return this.listProduct.find(product => product.product_id == product_id);
+    },
+
+    getProductPrice(product_id) {
+      return this.listProduct.find(product => product.product_id == product_id)?.product_price;
+    },
+
+    getProductImage(product_id) {
+      return this.listProduct.find(product => product.product_id == product_id)?.product_img;
+    },
+
+    getProductName(product_id) {
+      return this.listProduct.find(product => product.product_id == product_id)?.product_name;
+    }
   },
 });

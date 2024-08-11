@@ -2,7 +2,6 @@
   <div class="container">
     <el-carousel indicator-position="outside">
       <el-carousel-item v-for="item in 3" :key="item" :class="'carousel-item-' + item">
-        <!-- <h3 text="2xl" justify="center">{{ item }}</h3> -->
       </el-carousel-item>
     </el-carousel>
   </div>
@@ -12,14 +11,15 @@
     <div class="text-center mb-2"><span style="font-weight: 600; font-size: 24px">Danh mục sản phẩm</span></div>
     <div class="row text-center">
       <Category v-for="category in categoryStore.listCategory" :title="category.category_name"
-        :key="category.category_id" :image="'../../assets/images/category/' + category.category_name + '.jpg'"
-        AcctionDetail="Xem thêm" />
+        :categoryId="category.category_id" :key="category.category_id"
+        :image="'../../assets/images/category/' + category.category_name + '.jpg'" AcctionDetail="Xem thêm" />
     </div>
 
   </div>
 
   <div class="container">
-    <ProductTitleCard title="Khô cá Cà Mau" :product="productStore.fishList" />
+    <ProductTitleCard title="Khô cá Cà Mau" :product="productStore.fishList"
+      @handleCreateProductLike="handleCreateProductLike" />
   </div>
 
   <div v-show="listProductByName.length != 0" class="container bg-trasparent mt-2" style="position: relative">
@@ -90,10 +90,9 @@ import { useCategoryStore } from "@/stores/category";
 import { useFavoriteStore } from "@/stores/favorite";
 import { useProductStore } from "@/stores/product";
 import { useCartStore } from "@/stores/cart";
-import { ElNotification, ElMessage } from "element-plus";
 import { useRouter } from "vue-router";
 import { formatCurrency } from '@/helpers/UtilHelper';
-import { showSuccess, showWarning } from "@/helpers/NotificationHelper";
+import { showSuccess, showWarning, showSuccessMessage } from "@/helpers/NotificationHelper";
 const { loading, spinnerStyle, spinnerDelay1, spinnerDelay2, spinnerDelay3 } =
   usePulseLoader();
 const router = useRouter();
@@ -103,21 +102,8 @@ const categoryStore = useCategoryStore();
 const cartStore = useCartStore();
 const authStore = useAuthStore();
 const searchStore = useSearchStore();
-const listFavorite = ref([]);
 
 const listProductByName = ref([]);
-
-
-const fetchListFavorite = async () => {
-  try {
-    const response = await favoriteService.getByUser();
-    listFavorite.value = response.data;
-    favoriteStore.setFavorite(response.data);
-    console.log("List favorite: ", response);
-  } catch (error) {
-    console.log(error.response);
-  }
-};
 
 const fetchProductFromName = async (data) => {
   try {
@@ -133,7 +119,6 @@ const fetchProductFromName = async (data) => {
 const deleteFavorite = async (productId) => {
   try {
     const response = await favoriteService.delete(productId);
-    fetchListFavorite();
     showSuccess("Đã loại bỏ khỏi danh sách yêu thích");
     setTimeout(() => {
       updateFishListWithLikes();
@@ -147,7 +132,6 @@ const deleteFavorite = async (productId) => {
 const createFavorite = async (productId) => {
   try {
     const response = await favoriteService.create({ product_id: productId });
-    fetchListFavorite();
     showSuccess("Thêm vào danh sách yêu thích thành công");
     setTimeout(() => {
       updateFishListWithLikes();
@@ -159,8 +143,8 @@ const createFavorite = async (productId) => {
 };
 const updateFishListWithLikes = () => {
   productStore.fishList.forEach((product) => {
-    const isLiked = listFavorite.value.some(
-      (favorite) => favorite.product_id === product.product_id
+    const isLiked = favoriteStore.listFavorite.some(
+      (favorite) => favorite.product_id == product.product_id
     );
     product.liked = isLiked;
   });
@@ -168,12 +152,35 @@ const updateFishListWithLikes = () => {
 
 const updateShrimpListWithLikes = () => {
   productStore.shrimpList.forEach((product) => {
-    const isLiked = listFavorite.value.some(
-      (favorite) => favorite.product_id === product.product_id
+    const isLiked = favoriteStore.listFavorite.some(
+      (favorite) => favorite.product_id == product.product_id
     );
     product.liked = isLiked;
   });
 };
+
+const handleCreateProductLike = async (productId, liked) => {
+  try {
+    if (!liked) {
+      await favoriteStore.createFavorite(productId);
+      showSuccessMessage("Đã thêm vào mục yêu thích");
+      await favoriteStore.fetchListFavorite().finally(() => {
+        updateFishListWithLikes();
+        updateShrimpListWithLikes();
+      })
+    } else {
+      await favoriteStore.deleteFavorite(productId);
+      showSuccessMessage("Đã xóa khỏi mục yêu thích");
+      await favoriteStore.fetchListFavorite().finally(() => {
+        updateFishListWithLikes();
+        updateShrimpListWithLikes();
+      })
+    }
+
+  } catch (error) {
+    console.log(error.response);
+  }
+}
 
 watch(
   () => searchStore.dataSearch,
@@ -187,13 +194,17 @@ watch(
 
 onMounted(async () => {
   await categoryStore.fetchListCategory();
+  await favoriteStore.fetchListFavorite();
   await productStore.fetchListFish();
-  await productStore.fetchListShrimp();
-  fetchListFavorite();
+  await productStore.fetchListShrimp()
+
   if (searchStore.dataSearch) {
     fetchProductFromName(searchStore.dataSearch);
   }
-  cartStore.fetchCartCount();
+  if (authStore.isUserLoggedIn) {
+    await cartStore.fetchCartCount();
+
+  }
   setTimeout(() => {
     updateFishListWithLikes();
     updateShrimpListWithLikes();

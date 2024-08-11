@@ -4,15 +4,14 @@
         <div class="category-item">
             <img :src="image" alt="Introduction" class="img-fluid">
             <h2 class="title">{{ title }}</h2>
-            <button class="btn btn-outline-success button-css">{{ AcctionDetail }}</button>
+            <button @click="$router.push({ name: 'product', params: { id: categoryId } })"
+                class="btn btn-outline-success button-css">{{ AcctionDetail }}</button>
         </div>
     </div>
 
 </template>
 
 <script setup>
-
-const imgUrl = "../../assets/images/category/Khô 1 nắng.jpg";
 
 const props = defineProps({
     title: {
@@ -27,6 +26,10 @@ const props = defineProps({
         type: String,
         required: true
     },
+    categoryId: {
+        type: Number,
+        required: true
+    }
 
 });
 
@@ -51,7 +54,7 @@ const props = defineProps({
 }
 
 .category-item img {
-    max-width: 60%;
+    max-width: 40%;
     height: auto;
     border-radius: 50%;
 }
@@ -64,7 +67,7 @@ const props = defineProps({
 
 .category-item .btn {
     font-size: 1rem;
-    padding: 10px 20px;
+    padding: 5px 10px;
 }
 
 .button-css {
