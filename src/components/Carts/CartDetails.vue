@@ -25,9 +25,9 @@
                             <tr class="bg-light">
                                 <th>Địa chỉ:</th>
                                 <td class="text-end">
-                                    <select name="addressToPay" :value="addressToPay"
-                                        @change="updateAddress($event.target.value)" class="text-truncate">
-                                        <option value="" selected disabled>
+                                    <select name="addressToPay" :value="addressToPay" class="text-truncate"
+                                        style="width: 54%;" @change="updateAddressToPay($event)">
+                                        <option value="-1" selected disabled>
                                             --Chọn địa chỉ--
                                         </option>
                                         <option v-for="(data, index) in listAddress" :value="index" :key="index">
@@ -54,21 +54,20 @@
 
 <script setup>
 import { formatCurrency } from '@/helpers/UtilHelper';
+const emit = defineEmits(['redirectPayment']);
 const props = defineProps({
     total: Number,
     number: Number,
     listAddress: Array,
-    addressToPay: {
-        type: [String, Number],
-        default: ""
-    },
+    addressToPay: Number,
     addressError: String,
 });
 
-// Emit an event to update the addressToPay value
-const updateAddress = (value) => {
-    emit('update:addressToPay', value);
+const updateAddressToPay = (event) => {
+    emit('update:addressToPay', parseInt(event.target.value));
 };
+
+
 </script>
 
 <style scoped>

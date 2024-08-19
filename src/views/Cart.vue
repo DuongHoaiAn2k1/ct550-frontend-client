@@ -28,7 +28,8 @@
       <div class="col-xl-4 ">
         <div class="border shadow-none">
           <CartDetails v-if="cartStore.count != 0" :total="total" :number="number" :listAddress="listAddress"
-            :addressToPay.sync="addressToPay" :addressError="addressError" @redirectPayment="hanleRedirectPayment" />
+            :addressToPay.sync="addressToPay" :addressError="addressError" @update:addressToPay="addressToPay = $event"
+            @redirectPayment="hanleRedirectPayment" />
         </div>
 
       </div>
@@ -70,7 +71,7 @@ const listAddress = ref([]);
 const router = useRouter();
 
 // Index của địa chỉ trong address json
-const addressToPay = ref("");
+const addressToPay = ref(-1);
 
 
 const fetchUserData = async () => {
@@ -134,12 +135,12 @@ const hanldeTotal = () => {
 };
 
 const hanleRedirectPayment = () => {
-  if (addressToPay.value === "" && listAddress.value != null) {
+  if (addressToPay.value === -1 && listAddress.value != null) {
     addressError.value = "Địa chỉ không được để trống";
-  } else if (addressToPay.value === "" && listAddress.value == null) {
+  } else if (addressToPay.value === -1 && listAddress.value == null) {
     showAddressNotification();
   }
-  else if (addressToPay.value !== "" || addressToPay.value === 0) {
+  else if (addressToPay.value !== -1 || addressToPay.value === 0) {
     addressError.value = "";
     cartStore.setAddress(addressToPay.value);
     router.push({ name: "payment" });

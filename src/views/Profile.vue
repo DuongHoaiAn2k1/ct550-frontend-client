@@ -1,5 +1,5 @@
 <template>
-  <div class="container mt-1">
+  <div class="container mt-1" style="background-color: white">
     <div class="row">
       <div class="col-xl-8">
         <div class="">
@@ -38,7 +38,7 @@
                           </tr>
                           <tr>
                             <th scope="row">Điểm tích lũy</th>
-                            <td>{{ userData.point }}</td>
+                            <td>{{ userData.point ? userData.point : 0 }}</td>
                           </tr>
                           <!-- end tr -->
                         </tbody>
@@ -61,7 +61,8 @@
             <div class="tab-pane active show" id="tasks-tab" role="tabpanel">
               <h4 class="card-title mb-4 design-fontweight-600">Đơn hàng của bạn</h4>
               <el-scrollbar height="400px">
-                <div v-show="listOrder.length" class="row order-item" v-for="data in listOrder" :key="data.order_id">
+                <div v-show="orderStore.listOrder.length" class="row order-item" v-for="data in orderStore.listOrder"
+                  :key="data.order_id">
                   <div class="col-xl-12">
                     <div class="task-list-box" id="comp-task">
                       <div id="task-item-4">
@@ -86,12 +87,10 @@
                                         <a href="javascript: void(0);" class="d-inline-block" data-bs-toggle="tooltip"
                                           data-bs-placement="top" value="member-3" aria-label="Annmarie Paul"
                                           data-bs-original-title="Annmarie Paul">
-                                          <img :src="'https://dacsancamau.com/storage/' +
-                                            JSON.parse(
-                                              data.order_detail[0].product
-                                                .product_img
-                                            )[0]
-                                            " alt="" class="rounded-circle avatar-sm" />
+                                          <img
+                                            :src="'https://dacsancamau.com/storage/' + JSON.parse((data?.order_detail)[0]?.product?.product_img)[0]"
+                                            alt="" class=" rounded-circle
+                                            avatar-sm" />
                                         </a>
                                       </div>
                                     </div>
@@ -156,7 +155,7 @@
                     </div>
                   </div>
                 </div>
-                <div v-show="!listOrder.length" class="text-center">
+                <div v-show="!orderStore.listOrder.length" class="text-center">
                   Bạn chưa có đơn hàng nào!
                 </div>
               </el-scrollbar>
@@ -453,6 +452,7 @@ import userService from "@/services/user.service";
 import { computed, onMounted, reactive, ref, watchEffect } from "vue";
 import { useAuthStore } from "@/stores/auth";
 import { useFavoriteStore } from "../stores/favorite";
+import { useOrderStore } from "../stores/order";
 import addressData from "@/assets/address/dvhc.json";
 import { convertTime, formatCurrency } from '@/helpers/UtilHelper';
 import { showSuccess } from "../helpers/NotificationHelper";
@@ -481,6 +481,7 @@ const schema = Yup.object().shape({
 
 const favoriteStore = useFavoriteStore();
 const authStore = useAuthStore();
+const orderStore = useOrderStore();
 const userData = ref({});
 const nameUser = ref("");
 const listAddressUser = ref([]);
@@ -503,8 +504,6 @@ const addressInfoData = reactive({
   address: "",
 });
 
-const listOrder = ref([]);
-
 const cityAddress = ref(0);
 const districtAddress = ref(0);
 const commueAddress = ref(0);
@@ -520,16 +519,6 @@ const fetchUserData = async () => {
     nameUser.value = response.data.name;
     console.log(response.data.address);
     listAddressUser.value = JSON.parse(response.data.address);
-  } catch (error) {
-    console.log(error.response);
-  }
-};
-
-const fetchListOrder = async () => {
-  try {
-    const response = await orderService.getByUser();
-    listOrder.value = response.data;
-    console.log("List order: ", response);
   } catch (error) {
     console.log(error.response);
   }
@@ -552,6 +541,18 @@ const getNameCommune = (id) => {
 const createAddress = async (data) => {
   try {
     const response = await userService.createAddress(data);
+    addressInfoData.name = "";
+    addressInfoData.phone = "";
+    addressInfoData.city = "";
+    addressInfoData.district = "";
+    addressInfoData.commue = "";
+    addressInfoData.address = "";
+    cityAddress.value = 0;
+    districtAddress.value = 0;
+    commueAddress.value = 0;
+    listCommune.value = [];
+    listDistrict.value = [];
+
     console.log("After create address: ", response);
   } catch (error) {
     console.log(error.response);
@@ -723,6 +724,7 @@ const handleCreateAddress = () => {
 const handleDeteleAddress = async (index) => {
   try {
     const response = await userService.deleteAddress(index);
+    console.log("Delete: ", response);
     showSuccess("Xóa địa chỉ thành công.");
     fetchUserData();
   } catch (error) {
@@ -741,8 +743,8 @@ const handleFetchCartCount = async () => {
 onMounted(async () => {
   handleFetchCartCount();
   fetchUserData();
-  fetchListOrder();
   await favoriteStore.fetchListFavorite();
+  await orderStore.fetchListOrder();
 
   // console.log("GET: ", getDataDistric("01")[0].name);
 });
@@ -928,7 +930,7 @@ const paginatedList = computed(() => {
 
 .nav-tabs-custom .nav-item .nav-link::after {
   content: "";
-  background: #038edc;
+  /* background: #038edc; */
   height: 2px;
   position: absolute;
   width: 100%;
