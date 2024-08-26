@@ -177,6 +177,7 @@ import { useRoute, useRouter } from "vue-router";
 import { ElLoading, ElNotification, ElMessage } from "element-plus";
 import userService from "@/services/user.service";
 import productService from "@/services/product.service";
+import order_detailService from "../services/order_detail.service";
 const centerDialogVisible = ref(false);
 const order = ref([]);
 const address = ref([]);
@@ -208,7 +209,7 @@ const handleCancelOrder = async (orderId) => {
     await userService.restorePointPaid({
       point_paid: order.value.point_used_order,
     });
-    await productService.increaseProductQuantity(productIncrease.value);
+    await order_detailService.revertStock(orderId);
     setTimeout(() => {
       loading.close();
       showCancelSuccess();

@@ -217,7 +217,7 @@
 
 <script setup>
 import { showLoading } from "@/helpers/LoadingHelper";
-import { showSuccess, showWarning } from "@/helpers/NotificationHelper";
+import { showSuccess, showWarning, showError } from "@/helpers/NotificationHelper";
 import { formatCurrency } from "@/helpers/UtilHelper";
 import { useRouter } from "vue-router";
 import { useCartStore } from "@/stores/cart";
@@ -228,6 +228,7 @@ import productService from "@/services/product.service";
 import cartService from "@/services/cart.service";
 import userService from "@/services/user.service";
 import order_detailService from "@/services/order_detail.service";
+import batchService from "../services/batch.service";
 const router = useRouter();
 const cartStore = useCartStore();
 const authStore = useAuthStore();
@@ -353,6 +354,7 @@ const handlePayment = async () => {
       pointUsed.value * 1000 +
       calculateShippingFee(number.value) * 0.7;
     orderData.value.point_used_order = pointUsed.value;
+
     if (pointUsed.value != 0 && pointUsed.value > currentPoint.value) {
       showWarning(
         "Điểm sử dụng đã vượt quá điểm tích lũy. Điểm hiện tại của bạn là: " +
@@ -361,47 +363,66 @@ const handlePayment = async () => {
       );
     } else {
       const orderResponse = await orderService.create(orderData.value);
-      const order_id = orderResponse.order_id;
 
-      if (order_id !== null) {
+      // Kiểm tra nếu tạo đơn hàng thành công
+      if (orderResponse && orderResponse.order_id) {
+        const order_id = orderResponse.order_id;
+
         for (const item of cartData.value) {
-          const orderDetailData = {
-            order_id: order_id,
-            product_id: item.product_id,
-            quantity: item.quantity,
-            total_cost_detail: getProduct(item.product_id).product_price,
-          };
           const productDecreaseQuantity = {
             product_id: item.product_id,
             quantity: item.quantity,
           };
-          await order_detailService.create(orderDetailData);
-          await productService.decreaseProductQuantity(productDecreaseQuantity);
+
+          const reduceStockResponse = await batchService.reduceStock(productDecreaseQuantity);
+
+          if (reduceStockResponse && reduceStockResponse.status === 'success') {
+            const orderDetailData = {
+              order_id: order_id,
+              product_id: item.product_id,
+              quantity: item.quantity,
+              total_cost_detail: getProduct(item.product_id).product_price,
+              batch_details: reduceStockResponse.batchDetails
+            };
+
+            await order_detailService.create(orderDetailData);
+          } else {
+            // Xử lý nếu không thể giảm số lượng trong kho
+            showWarning('Không thể giảm số lượng trong kho cho sản phẩm: ' + item.product_id);
+            return;
+          }
         }
-      }
-      await userService.pointDecrement({ point_used: pointUsed.value });
-      // Tang ne
-      if (orderData.value.total_cost > 500000) {
-        await userService.pointIncrement();
-      }
-      const loading = showLoading();
 
-      setTimeout(() => {
-        showSuccess("Đặt hàng thành công");
-        loading.close();
+        await userService.pointDecrement({ point_used: pointUsed.value });
+
+        if (orderData.value.total_cost > 500000) {
+          await userService.pointIncrement();
+        }
+
+        const loading = showLoading();
+
         setTimeout(() => {
-          handleDeleteCart();
-          cartStore.deleteCart();
-          router.push({ name: "profile" });
-        }, 500);
-      }, 2000);
+          showSuccess("Đặt hàng thành công");
+          loading.close();
+          setTimeout(() => {
+            handleDeleteCart();
+            cartStore.deleteCart();
+            router.push({ name: "profile" });
+          }, 500);
+        }, 2000);
 
-      console.log("Order data after create: ", orderResponse);
+        console.log("Order data after create: ", orderResponse);
+      } else {
+        // Xử lý nếu tạo đơn hàng không thành công
+        showWarning('Không thể tạo đơn hàng. Vui lòng thử lại sau.');
+      }
     }
   } catch (error) {
     console.log(error.response);
+    showError('Có lỗi xảy ra khi xử lý thanh toán. Vui lòng thử lại sau.');
   }
 };
+
 
 onMounted(() => {
   countOrder().then(() => {

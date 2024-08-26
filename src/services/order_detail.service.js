@@ -20,6 +20,10 @@ class OrderDetailService {
   async checkUserPurchasedProduct(id) {
     return (await this.api.post(`/check/user/${id}`)).data;
   }
+
+  async revertStock(id) {
+    return (await this.api.post(`/order/${id}`)).data;
+  }
 }
 
 export default new OrderDetailService();
