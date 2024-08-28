@@ -229,6 +229,7 @@ import cartService from "@/services/cart.service";
 import userService from "@/services/user.service";
 import order_detailService from "@/services/order_detail.service";
 import batchService from "../services/batch.service";
+import notificationService from "../services/notification.service";
 const router = useRouter();
 const cartStore = useCartStore();
 const authStore = useAuthStore();
@@ -362,8 +363,14 @@ const handlePayment = async () => {
         ""
       );
     } else {
-      const orderResponse = await orderService.create(orderData.value);
-
+      const [orderResponse, notificationResponse] = await Promise.all([
+        orderService.create(orderData.value),
+        notificationService.create({
+          message: 'Đơn hàng đã đặt thành công',
+          route_name: 'order',
+          type: 'user'
+        })
+      ]);
       // Kiểm tra nếu tạo đơn hàng thành công
       if (orderResponse && orderResponse.order_id) {
         const order_id = orderResponse.order_id;
