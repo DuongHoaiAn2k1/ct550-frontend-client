@@ -9,7 +9,7 @@ const authStore = useAuthStore();
 const cartStore = useCartStore();
 const router = useRouter();
 
-const addToCart = async (product_id) => {
+const addToCart = async (product_id, weight) => {
     if (authStore.isUserLoggedIn) {
       try {
         const user_id = authStore.user_id;
@@ -17,6 +17,7 @@ const addToCart = async (product_id) => {
           user_id: user_id,
           product_id: product_id,
           quantity: 1,
+          total_weight: weight,
         });
         await cartStore.fetchCartCount();
         console.log("Ket qua them: ", response);

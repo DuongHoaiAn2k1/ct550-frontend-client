@@ -18,7 +18,7 @@ class UserService {
   }
 
   async update(data) {
-    return (await this.api.patch("/update", data)).data;
+    return (await this.api.post("/update", data)).data;
   }
 
   async updatePass(data) {

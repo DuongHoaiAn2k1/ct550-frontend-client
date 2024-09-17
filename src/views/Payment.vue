@@ -49,13 +49,15 @@
                           <h6 class="small mb-0">
                             <a href="#" class="text-reset">{{
                               getProduct(data.product_id)?.product_name
-                              }}</a>
+                            }}</a>
                           </h6>
                           <span class="small">Giá:
                             {{
-                              formatCurrency(
-                                getProduct(data.product_id)?.product_price
-                              )
+                              getProduct(data.product_id)?.product_promotion.length > 0 &&
+                                JSON.parse(getProduct(data.product_id)?.product_promotion[0].promotion.user_group).includes(Cookies.get('role'))
+                                ? formatCurrency(getProduct(data.product_id)?.product_price -
+                                  getProduct(data.product_id)?.product_promotion[0].discount_price) :
+                                formatCurrency(getProduct(data.product_id)?.product_price)
                             }}</span>
                         </div>
                       </div>
@@ -63,10 +65,12 @@
                     <td>x{{ data.quantity }}</td>
                     <td class="text-end">
                       {{
-                        formatCurrency(
-                          getProduct(data.product_id)?.product_price *
-                          data.quantity
-                        )
+                        getProduct(data.product_id)?.product_promotion.length > 0
+                          &&
+                          JSON.parse(getProduct(data.product_id)?.product_promotion[0]?.promotion.user_group).includes(Cookies.get('role'))
+                          ? formatCurrency((getProduct(data.product_id)?.product_price -
+                            getProduct(data.product_id)?.product_promotion[0].discount_price) * data.quantity) :
+                          formatCurrency(getProduct(data.product_id)?.product_price * data.quantity)
                       }}
                     </td>
                   </tr>
@@ -77,12 +81,16 @@
                     <td class="text-end">{{ formatCurrency(totalMoney) }}</td>
                   </tr>
                   <tr>
-                    <td colspan="2">Phí vận chuyển</td>
-                    <td class="text-end">
-                      {{ formatCurrency(calculateShippingFee(number)) }}
-                    </td>
+                    <td colspan="2">Tổng trọng lượng</td>
+                    <td class="text-end">{{ totalWeight }} kg</td>
                   </tr>
                   <tr>
+                    <td colspan="2">Phí vận chuyển</td>
+                    <td class="text-end">
+                      {{ formatCurrency(shippingFee) }}
+                    </td>
+                  </tr>
+                  <!-- <tr>
                     <td colspan="2">
                       Hỗ trợ phí ship từ cửa hàng
                       <span class="text-danger">(-30%)</span>
@@ -90,7 +98,7 @@
                     <td class="text-danger text-end">
                       -{{ formatCurrency(calculateShippingFee(number) * 0.3) }}
                     </td>
-                  </tr>
+                  </tr> -->
                   <tr>
                     <td colspan="2">Điểm sử dụng</td>
                     <td class="text-end text-danger">
@@ -114,7 +122,7 @@
                         formatCurrency(
                           totalMoney -
                           pointUsed * 1000 +
-                          calculateShippingFee(number) * 0.7
+                          shippingFee
                         )
                       }}
                     </td>
@@ -143,6 +151,12 @@
                     <span style="font-weight: 600">Số điện thoại:</span>
                     {{ addressOrder.phone }}
                   </h3>
+
+                  <h3 class="h6">
+                    <span style="font-weight: 600">Phương thức vận chuyển:</span>
+                    <img class="ms-2" src="https://cdn.haitrieu.com/wp-content/uploads/2022/05/Logo-GHTK-H.png" alt=""
+                      width="100">
+                  </h3>
                 </div>
               </div>
             </div>
@@ -152,44 +166,33 @@
             <div class="card-body">
               <div class="row">
                 <div class="col-lg-6">
-                  <h3 class="h6">Phương thức thanh toán</h3>
+                  <h3 class="h6" style="font-weight: 600;">Phương thức thanh toán</h3>
                 </div>
               </div>
               <div class="row">
                 <div class="d-flex flex-row pb-3">
                   <div class="d-flex align-items-center pe-2">
-                    <input class="form-check-input" type="radio" name="radioNoLabel" id="radioNoLabel1" value=""
-                      aria-label="..." checked />
+                    <input class="form-check-input" type="radio" name="radioNoLabel" id="radioNoLabel1" value="cod"
+                      v-model="payMethod" aria-label="..." checked />
                   </div>
-                  <div class="rounded border d-flex w-100 p-3 align-items-center">
-                    <p class="mb-0">
-                      <i class="fa-solid fa-truck"></i>
-                      Thanh toán khi nhận hàng
-                    </p>
-                  </div>
+                  <label class="rounded border d-flex w-100 p-3 align-items-center" for="radioNoLabel1">
+                    <i class="fa-solid fa-truck"></i>
+                    Thanh toán khi nhận hàng
+                  </label>
                 </div>
 
-                <!-- <div class="d-flex flex-row">
-                    <div class="d-flex align-items-center pe-2">
-                      <input
-                        class="form-check-input"
-                        type="radio"
-                        name="radioNoLabel"
-                        id="radioNoLabel2"
-                        value=""
-                        aria-label="..."
-                      />
-                    </div>
-                    <div
-                      class="rounded border d-flex w-100 p-3 align-items-center"
-                    >
-                      <p class="mb-0">
-                        <i class="fab fa-cc-mastercard fa-lg text-dark pe-2"></i
-                        >Mastercard Office
-                      </p>
-                      <div class="ms-auto">************1038</div>
-                    </div>
-                  </div> -->
+
+                <div class="d-flex flex-row">
+                  <div class="d-flex align-items-center pe-2">
+                    <input class="form-check-input" type="radio" name="radioNoLabel" id="radioNoLabel2" value="vnpay"
+                      aria-label="..." v-model="payMethod" />
+                  </div>
+                  <div class="rounded border d-flex w-100 p-3 align-items-center">
+                    <label class="mb-0" for="radioNoLabel2">
+                      <i class="fab fa-cc-mastercard fa-lg text-dark pe-2"></i>Thanh toán online VNPay
+                    </label>
+                  </div>
+                </div>
               </div>
               <div class="row mt-2">
                 <div class="input-group mb-3">
@@ -201,7 +204,7 @@
               </div>
               <div class="row">
                 <div class="mt-2 text-center">
-                  <button @click="handlePayment" class="btn btn-dark btn-block btn-lg">
+                  <button @click="preprocessOrder" class="btn btn-dark btn-block btn-lg">
                     ĐẶT HÀNG
                     <i class="fas fa-long-arrow-alt-right"></i>
                   </button>
@@ -216,23 +219,28 @@
 </template>
 
 <script setup>
+import Cookies from "js-cookie";
 import { showLoading } from "@/helpers/LoadingHelper";
 import { showSuccess, showWarning, showError } from "@/helpers/NotificationHelper";
 import { formatCurrency } from "@/helpers/UtilHelper";
 import { useRouter } from "vue-router";
 import { useCartStore } from "@/stores/cart";
-import { onMounted, ref } from "vue";
+import { useProductStore } from "@/stores/product";
+import { onMounted, ref, watch } from "vue";
 import orderService from "@/services/order.service";
 import { useAuthStore } from "@/stores/auth";
 import productService from "@/services/product.service";
 import cartService from "@/services/cart.service";
 import userService from "@/services/user.service";
+import shippingService from "../services/shipping.service";
 import order_detailService from "@/services/order_detail.service";
 import batchService from "../services/batch.service";
 import notificationService from "../services/notification.service";
+import paymentService from "../services/payment.service";
 const router = useRouter();
 const cartStore = useCartStore();
 const authStore = useAuthStore();
+const productStore = useProductStore();
 const total = ref(0);
 const bill_id = ref("");
 const currentDay = new Date();
@@ -245,21 +253,33 @@ const userData = ref([]);
 const ListAddressOrder = ref([]);
 const addressOrder = ref([]);
 const totalMoney = ref(0);
+const totalWeight = ref(0);
+const shippingFee = ref(0);
 const number = ref(0);
 const point = ref(0);
 const pointUsed = ref(0);
 const currentPoint = ref(0);
+const payMethod = ref("cod");
+const checkStockResult = ref('');
 
-const orderData = ref({});
-const countOrder = async () => {
+const checkStockAvailable = async (data) => {
   try {
-    const response = await orderService.count();
-    console.log("Tong: ", response);
-    total.value = response.total;
+    const response = await batchService.checkStockAvailability({ products: data });
+    // console.log("Cart data to check: ", data);
+    // console.log("Check Stock: ", response);
+    checkStockResult.value = response.status;
+    // console.log(checkStockResult.value);
   } catch (error) {
     console.log(error.response);
+    showWarning('Có sản phẩm không còn đủ số lượng trong kho');
   }
-};
+}
+
+watch(payMethod, (newValvue) => {
+  // console.log("payMethod: ", newValvue);
+})
+
+const orderData = ref({});
 
 const fetchListProduct = async () => {
   try {
@@ -287,7 +307,7 @@ const fetchCartData = async () => {
   try {
     const response = await cartService.get();
     cartData.value = response.data;
-    // console.log(cartData);
+    // console.log('Cart Data: ', cartData);
   } catch (error) {
     console.log(error.response);
   }
@@ -297,7 +317,7 @@ const fetchCurrentPoint = async () => {
   try {
     const response = await userService.getCurrentPoint();
     currentPoint.value = response.point;
-    console.log("Current Point: ", response);
+    // console.log("Current Point: ", response);
   } catch (error) {
     console.log(error.response);
   }
@@ -309,21 +329,32 @@ const getProduct = (id) => {
 
 const handleTotal = () => {
   totalMoney.value = 0;
+  totalWeight.value = 0;
   number.value = 0;
   cartData.value.forEach((cart) => {
-    console.log("Cart: ", cart);
+    // console.log("Cart: ", cart);
     // console.log("Product: ", getProduct(cart.product_id).product_price);
+    totalWeight.value = totalWeight.value + getProduct(cart.product_id).weight * cart.quantity;
     number.value = number.value + cart.quantity;
-    totalMoney.value =
-      totalMoney.value +
-      getProduct(cart.product_id).product_price * cart.quantity;
+    var role = [];
+    role = productStore.getRoleProductPromotion(cart.product_id);
+    // console.log("Current Product: ", currentProduct);
+    // console.log("Role: ", role);
+    if (role?.includes(Cookies.get('role'))) {
+      totalMoney.value =
+        totalMoney.value +
+        (getProduct(cart.product_id).product_price - getProduct(cart.product_id).product_promotion[0].discount_price) * cart.quantity;
+    } else {
+      totalMoney.value =
+        totalMoney.value +
+        getProduct(cart.product_id).product_price * cart.quantity;
+    }
   });
 
   if (
     totalMoney.value -
-    pointUsed.value * 1000 +
-    calculateShippingFee(number.value) * 0.7 >=
-    500000
+    pointUsed.value * 1000 + shippingFee.value >=
+    1000000
   ) {
     point.value = 10;
   }
@@ -332,16 +363,92 @@ const handleTotal = () => {
 const handleDeleteCart = async () => {
   try {
     const response = await cartService.deleteAll();
-    console.log(response);
+    // console.log(response);
   } catch (error) {
     console.log(error.response);
   }
 };
 
-const handlePayment = async () => {
+const handleCreateOrderDetail = async (data) => {
+  try {
+    const response = await order_detailService.create(data);
+    console.log("After create order detail: ", response);
+  } catch (error) {
+    console.log(error.response);
+  }
+}
+
+const handleReduceStock = async (data) => {
+  try {
+    const response = await productService.reduceStock(data);
+    console.log("After reduce stock: ", response);
+    return response;
+  } catch (error) {
+    console.log(error.response);
+  }
+}
+
+const preprocessOrder = async () => {
+  checkStockAvailable(cartData.value).then(async () => {
+    if (checkStockResult.value == "success") {
+      // alert("Success")
+      if (payMethod.value == "cod") {
+        handleOrder("preparing");
+      } else {
+        let now = new Date(currentDay.getTime() + 25 * 60000);
+
+        // Lấy thông tin ngày giờ sau khi cộng thêm
+        let day = now.getDate();
+        let month = now.getMonth() + 1;
+        let year = now.getFullYear();
+        let hour = now.getHours();
+        let minute = now.getMinutes();
+        let second = now.getSeconds();
+
+        // Định dạng ngày, tháng, giờ, phút, giây
+        let monthStr = month.toString().padStart(2, '0');
+        let dayStr = day.toString().padStart(2, '0');
+        let hourStr = hour.toString().padStart(2, '0');
+        let minuteStr = minute.toString().padStart(2, '0');
+        let secondStr = second.toString().padStart(2, '0');
+        const response = await paymentService.createPayment({
+          order_id: bill_id.value,
+          order_desc: "Thanh toán đơn hàng #" + bill_id.value,
+          order_type: "billpayment",
+          amount: totalMoney.value,
+          language: "vn",
+          txtexpire: year + monthStr + dayStr + hourStr + minuteStr + secondStr,
+          txt_billing_mobile: addressOrder.value.phone,
+          txt_billing_email: Cookies.get("email"),
+          txt_billing_fullname: addressOrder.value.name,
+          txt_inv_addr1: addressOrder.value.address + ", " + addressOrder.value.commue + ", " + addressOrder.value.district + ", " + addressOrder.value.city,
+          txt_bill_city: addressOrder.value.city,
+          txt_bill_country: 'Việt Nam',
+          txt_inv_mobile: addressOrder.value.phone,
+          txt_inv_email: Cookies.get("email"),
+          txt_inv_customer: addressOrder.value.name,
+          cbo_inv_type: 'I'
+        })
+
+
+        if (response.code == '00') {
+          handleOrder('pending_payment').then(() => {
+            handleDeleteCart();
+            cartStore.deleteCart();
+
+            window.location.href = response.data;
+          })
+
+        }
+      }
+    }
+  })
+}
+
+const handleOrder = async (status) => {
   try {
     orderData.value.bill_id = bill_id;
-    orderData.value.status = "1";
+    orderData.value.status = status;
     orderData.value.name = addressOrder.value.name;
     orderData.value.phone = addressOrder.value.phone;
     orderData.value.address = addressOrder.value.address;
@@ -349,11 +456,11 @@ const handlePayment = async () => {
     orderData.value.district = addressOrder.value.district;
     orderData.value.city = addressOrder.value.city;
     orderData.value.paid = false;
-    orderData.value.shipping_fee = calculateShippingFee(number.value);
+    orderData.value.shipping_fee = shippingFee.value;
     orderData.value.total_cost =
       totalMoney.value -
-      pointUsed.value * 1000 +
-      calculateShippingFee(number.value) * 0.7;
+      pointUsed.value * 1000 + shippingFee.value;
+    orderData.value.pay_method = payMethod.value;
     orderData.value.point_used_order = pointUsed.value;
 
     if (pointUsed.value != 0 && pointUsed.value > currentPoint.value) {
@@ -374,49 +481,49 @@ const handlePayment = async () => {
       // Kiểm tra nếu tạo đơn hàng thành công
       if (orderResponse && orderResponse.order_id) {
         const order_id = orderResponse.order_id;
-
         for (const item of cartData.value) {
+          var role = [];
+          role = productStore.getRoleProductPromotion(item.product_id);
           const productDecreaseQuantity = {
             product_id: item.product_id,
             quantity: item.quantity,
           };
-
           const reduceStockResponse = await batchService.reduceStock(productDecreaseQuantity);
 
-          if (reduceStockResponse && reduceStockResponse.status === 'success') {
-            const orderDetailData = {
-              order_id: order_id,
-              product_id: item.product_id,
-              quantity: item.quantity,
-              total_cost_detail: getProduct(item.product_id).product_price,
-              batch_details: reduceStockResponse.batchDetails
-            };
-
-            await order_detailService.create(orderDetailData);
+          var totalCostDetail = 0;
+          if (role?.includes(Cookies.get('role'))) {
+            totalCostDetail = (getProduct(item.product_id)?.product_price - getProduct(item.product_id)?.product_promotion[0]?.discount_price) * item.quantity
           } else {
-            // Xử lý nếu không thể giảm số lượng trong kho
-            showWarning('Không thể giảm số lượng trong kho cho sản phẩm: ' + item.product_id);
-            return;
+            totalCostDetail = getProduct(item.product_id)?.product_price * item.quantity
           }
+          const orderDetailData = {
+            order_id: order_id,
+            product_id: item.product_id,
+            quantity: item.quantity,
+            total_cost_detail: totalCostDetail,
+            batch_details: reduceStockResponse.batchDetails
+          };
+
+          console.log("Order detail data: ", orderDetailData);
+
+          // await order_detailService.create(orderDetailData);
+          handleCreateOrderDetail(orderDetailData);
+
         }
 
         await userService.pointDecrement({ point_used: pointUsed.value });
-
-        if (orderData.value.total_cost > 500000) {
-          await userService.pointIncrement();
-        }
-
-        const loading = showLoading();
-
-        setTimeout(() => {
-          showSuccess("Đặt hàng thành công");
-          loading.close();
+        if (payMethod.value == 'cod') {
+          const loading = showLoading();
           setTimeout(() => {
-            handleDeleteCart();
-            cartStore.deleteCart();
-            router.push({ name: "profile" });
-          }, 500);
-        }, 2000);
+            showSuccess("Đặt hàng thành công");
+            loading.close();
+            setTimeout(() => {
+              handleDeleteCart();
+              cartStore.deleteCart();
+              router.push({ name: "profile" });
+            }, 500);
+          }, 2000);
+        }
 
         console.log("Order data after create: ", orderResponse);
       } else {
@@ -431,20 +538,46 @@ const handlePayment = async () => {
 };
 
 
+const handleCalculateShippingFee = async () => {
+  try {
+    const response = await shippingService.getFee({
+      weight: totalWeight.value,
+      value: totalMoney.value,
+      province: addressOrder.value.city,
+      district: addressOrder.value.district,
+      address: addressOrder.address + ", " + addressOrder.commue
+    });
+    shippingFee.value = response.fee.fee;
+    // console.log("Shipping fee: ", response);
+  } catch (error) {
+    console.log(error);
+  }
+}
+
 onMounted(() => {
-  countOrder().then(() => {
-    bill_id.value = "DHA-" + authStore.user_id + "-" + total.value;
-  });
+  const now = new Date();
+  const formattedDate = now.getFullYear().toString() +
+    (now.getMonth() + 1).toString().padStart(2, '0') +
+    now.getDate().toString().padStart(2, '0') +
+    now.getHours().toString().padStart(2, '0') +
+    now.getMinutes().toString().padStart(2, '0') +
+    now.getSeconds().toString().padStart(2, '0');
+
+  bill_id.value = formattedDate + authStore.user_id;
+
+
   fetchListProduct();
   fetchCartData();
   fetchUserData();
   fetchCurrentPoint();
+  productStore.fetchListProduct();
   setTimeout(() => {
     handleTotal();
+    handleCalculateShippingFee();
     // console.log("Product: ", getProduct(9));
     // console.log("address x: ", addressOrder);
     console.log("Total Money: ", totalMoney);
-    console.log("Phi ship: ", calculateShippingFee(4));
+    // console.log("Phi ship: ", calculateShippingFee(4));
   }, 1000);
   // console.log(cartStore.addressToPay);
 });

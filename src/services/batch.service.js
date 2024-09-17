@@ -28,6 +28,10 @@ class BatchService {
     async reduceStock (data){
         return (await this.api.post('/reduce/product', data)).data
     }
+
+    async checkStockAvailability (data){
+        return (await this.api.post('/check/product', data)).data
+    }
 }
 
 export default new BatchService()

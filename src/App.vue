@@ -62,9 +62,6 @@ onMounted(async () => {
   }
 });
 
-watch(() => {
-  number.value = cartStore.count;
-});
 </script>
 <style>
 body {

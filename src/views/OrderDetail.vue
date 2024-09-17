@@ -9,7 +9,8 @@
                 Đơn hàng của bạn,
                 <span style="color: #a8729a">{{ address.name }}</span>!
               </h5>
-              <el-steps :active="order.status" align-center>
+              <el-steps v-show="order.status != 'cancelled'"
+                :active="(order.status == 'preparing') ? 1 : order.status == 'delivering' ? 2 : 3" align-center>
                 <el-step title="Đang chuẩn bị" />
                 <el-step title="Đang giao" />
                 <el-step title="Đã nhận" />
@@ -23,6 +24,15 @@
                 </p>
                 <p class="small text-muted mb-0">
                   Mã đơn hàng : #{{ order.bill_id }}
+                </p>
+              </div>
+              <div class="d-flex justify-content-between align-items-center mb-4">
+                <p></p>
+                <p v-show="order.paid === 1 && order.status != 'cancelled'" class="small text-muted mb-0">
+                  <el-tag type="success">Đã thanh toán</el-tag>
+                </p>
+                <p v-show="order.status === 'cancelled'" class="small text-muted mb-0">
+                  <el-tag type="danger">Đã hủy</el-tag>
                 </p>
               </div>
               <div class="card shadow-0 border mb-4">
@@ -69,14 +79,14 @@
                     </div>
                     <div class="col-md-2 text-center d-flex justify-content-center align-items-center">
                       <p class="text-muted mb-0 small">
-                        {{ formatCurrency(data.product.product_price) }}/kg
+                        {{ formatCurrency(data.total_cost_detail / data.quantity) }}/kg
                       </p>
                     </div>
                     <div class="col-md-2 text-center d-flex justify-content-center align-items-center">
                       <p class="text-muted mb-0 small">
                         {{
                           formatCurrency(
-                            data.product.product_price * data.quantity
+                            data.total_cost_detail
                           )
                         }}
                       </p>
@@ -88,7 +98,7 @@
               <div class="d-flex justify-content-between pt-2">
                 <p class="fw-bold mb-0">Chi tiết</p>
                 <p class="text-muted mb-0">
-                  <span class="fw-bold me-4">Tổng</span>
+                  <span class="fw-bold ">Tổng</span>
                   {{ formatCurrency(order.total_cost) }}
                 </p>
               </div>
@@ -99,9 +109,8 @@
                   {{ address.name }}
                 </p>
                 <p class="text-muted mb-0">
-                  <span class="fw-bold me-4">Hỗ trợ ship</span>
-                  <span class="text-danger">-
-                    {{ ((order.shipping_fee * 0.3) / 0.7).toFixed(0) }} ₫</span>
+                  <span class="fw-bold me-4">Phí giao hàng</span>
+                  {{ formatCurrency(order.shipping_fee) }}
                 </p>
               </div>
 
@@ -111,8 +120,9 @@
                   {{ address.phone }}
                 </p>
                 <p class="text-muted mb-0">
-                  <span class="fw-bold me-4">Phí giao hàng</span>
-                  {{ formatCurrency(order.shipping_fee) }}
+                  <span class="fw-bold me-4">Điểm dùng</span>
+                  - {{ order.point_used_order }} (
+                  {{ formatCurrency(order.point_used_order * 1000) }})
                 </p>
               </div>
 
@@ -123,9 +133,7 @@
                   {{ address.district }}, {{ address.city }}
                 </p>
                 <p class="text-muted mb-0">
-                  <span class="fw-bold me-4">Điểm dùng</span>
-                  - {{ order.point_used_order }} (
-                  {{ formatCurrency(order.point_used_order * 1000) }})
+
                 </p>
               </div>
               <div class="d-flex justify-content-between">
@@ -136,16 +144,35 @@
               </div>
             </div>
 
-            <div class="text-center my-1" v-show="order.status == 1">
-              <el-button size="large" @click="centerDialogVisible = true"><span style="font-size: 20px">Hủy đơn
+            <div class="text-center my-1" v-show="order.status == 'preparing'">
+              <el-button v-show="order.paid == 0" size="large" @click="centerDialogVisible1 = true"><span
+                  style="font-size: 20px">Hủy đơn
+                  hàng</span></el-button>
+              <el-button v-show="order.paid == 1" size="large" @click="centerDialogVisible2 = true"><span
+                  style="font-size: 20px">Hủy đơn
                   hàng</span></el-button>
             </div>
-            <el-dialog v-model="centerDialogVisible" width="500" align-center>
+            <el-dialog v-model="centerDialogVisible1" width="500" align-center>
               <span>Bạn có chắc chắn muốn hủy đơn hàng</span>
               <template #footer>
                 <div class="dialog-footer">
-                  <el-button @click="centerDialogVisible = false">Trở lại</el-button>
-                  <el-button type="primary" @click="handleCancelOrder(orderId)">
+                  <el-button @click="centerDialogVisible1 = false">Trở lại</el-button>
+                  <el-button style="background-color: #234A2B; color: white;" @click="handleCancelOrder(orderId)">
+                    Đồng ý
+                  </el-button>
+                </div>
+              </template>
+            </el-dialog>
+            <el-dialog v-model="centerDialogVisible2" width="500" align-center>
+              <span style="font-weight: 600;">Bạn có chắc chắn muốn hủy đơn hàng</span>
+              <p style="font-style: italic;">Do đơn hàng của bạn đã được thanh toán nên nếu bạn hủy đơn hàng thì thời
+                gian hoàn lại
+                tiền sẽ từ 1 - 3
+                ngày</p>
+              <template #footer>
+                <div class="dialog-footer">
+                  <el-button @click="centerDialogVisible2 = false">Trở lại</el-button>
+                  <el-button style="background-color: #234A2B; color: white;" @click="handleCancelOrder(orderId)">
                     Đồng ý
                   </el-button>
                 </div>
@@ -160,7 +187,7 @@
                 TỔNG PHẢI THANH TOÁN:
                 <span class="h2 mb-0 ms-2">{{
                   formatCurrency(order.total_cost)
-                }}</span>
+                  }}</span>
               </h5>
             </div>
           </div>
@@ -176,9 +203,10 @@ import { onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { ElLoading, ElNotification, ElMessage } from "element-plus";
 import userService from "@/services/user.service";
-import productService from "@/services/product.service";
 import order_detailService from "../services/order_detail.service";
-const centerDialogVisible = ref(false);
+import refundService from "../services/refund.service";
+const centerDialogVisible1 = ref(false);
+const centerDialogVisible2 = ref(false);
 const order = ref([]);
 const address = ref([]);
 const route = useRoute();
@@ -191,7 +219,7 @@ const fetchOrder = async () => {
     order.value = response.data;
     address.value = JSON.parse(response.data.order_address);
     productIncrease.value = response.data.order_detail;
-    console.log(response);
+    console.log("Detail of order: ", response);
   } catch (error) {
     console.log(error.response);
   }
@@ -200,7 +228,15 @@ const fetchOrder = async () => {
 const handleCancelOrder = async (orderId) => {
   try {
     const response = await orderService.cancel(orderId);
-    centerDialogVisible.value = false;
+    if (order.value.paid == 1) {
+
+      handleCreateRefund({
+        order_id: orderId,
+        bill_id: order.value.bill_id
+      });
+    }
+    centerDialogVisible1.value = false;
+    centerDialogVisible2.value = false;
     const loading = ElLoading.service({
       lock: true,
       text: "Đang xử lý...",
@@ -217,6 +253,15 @@ const handleCancelOrder = async (orderId) => {
         router.push({ name: "profile" });
       }, 1000);
     }, 2000);
+  } catch (error) {
+    console.log(error.response);
+  }
+};
+
+const handleCreateRefund = async (orderId) => {
+  try {
+    const response = await refundService.create(orderId);
+    console.log(response);
   } catch (error) {
     console.log(error.response);
   }

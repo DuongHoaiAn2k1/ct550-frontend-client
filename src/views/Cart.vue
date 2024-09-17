@@ -45,6 +45,7 @@
 </template>
 
 <script setup>
+import Cookies from "js-cookie";
 import { useAuthStore } from "@/stores/auth";
 import { useCartStore } from "@/stores/cart";
 import { useProductStore } from "@/stores/product";
@@ -88,7 +89,7 @@ const fetchCartData = async () => {
   try {
     const response = await cartService.get(authStore.user_id);
     cartData.value = response.data;
-    // console.log(response);
+    console.log("Cart Data: ", response);
   } catch (error) {
     console.log(error.response);
   }
@@ -124,14 +125,27 @@ const hanldeTotal = () => {
   total.value = 0;
   number.value = 0;
   cartData.value.forEach((cart) => {
-    // console.log("Cart: ", cart);
     number.value = number.value + cart.quantity;
-    total.value =
-      total.value +
-      // getProductById(cart.product_id)[0].product_price * cart.quantity;
+    var role = [];
+    role = productStore.getRoleProductPromotion(cart.product_id);
+    var currentProduct = productStore.getProductById(cart.product_id);
+    console.log("Current Product: ", currentProduct);
+    if (role.length != 0 && role.includes(Cookies.get('role'))) {
+      if (currentProduct.product_promotion.length != 0) {
+        total.value = total.value + (currentProduct.product_price - currentProduct.product_promotion[0].discount_price) * cart.quantity;
+      } else {
+        total.value = total.value + currentProduct.product_price * cart.quantity;
+      }
+    } else {
+      total.value =
+        total.value +
+        productStore.getProductPrice(cart.product_id) * cart.quantity;
+    }
+    console.log("Role: ", role);
 
-      productStore.getProductPrice(cart.product_id) * cart.quantity;
   });
+
+  console.log("Total: ", total.value);
 };
 
 const hanleRedirectPayment = () => {
@@ -147,27 +161,19 @@ const hanleRedirectPayment = () => {
   }
 };
 onMounted(async () => {
+  await productStore.fetchListProduct();
   fetchCartData().then(() => {
     hanldeTotal();
   });
   fetchUserData();
-  await productStore.fetchListProduct().finally(() => {
-    let productPrice = productStore.getProductPrice(4);
 
-    console.log("Product priceeeeeeeeeeeeee:", productPrice);
-  })
-
-});
-
-watchEffect(() => {
-  hanldeTotal();
-  // console.log("Index address: ", addressToPay.value);
 });
 
 const incrementQuantity = (cartItem) => {
   if (cartItem.quantity < 10) {
     cartItem.quantity += 1;
     handleIncrease(cartItem.cart_id);
+    hanldeTotal();
   } else {
     showWarning("Đã quá số lượng sản phẩm cho phép");
   }
@@ -177,6 +183,7 @@ const decrementQuantity = (cartItem) => {
   if (cartItem.quantity > 1) {
     cartItem.quantity -= 1;
     handleDecrease(cartItem.cart_id);
+    hanldeTotal();
   } else {
     showWarning("Đã quá đạt số lượng tối thiểu");
   }

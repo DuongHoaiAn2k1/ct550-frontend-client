@@ -18,7 +18,9 @@
                             <i class="bx bxs-star-half text-warning"></i>
                         </p>
                         <p class="mb-0 mt-1">
-                            Giá : <span class="fw-medium">{{ formatCurrency(product.product_price) }}</span>
+                            Giá : <span class="fw-medium">{{ promotionUser.includes(Cookies.get('role')) ?
+                                formatCurrency(product.product_price - product.product_promotion[0].discount_price) :
+                                formatCurrency(product.product_price) }}</span>
                         </p>
                     </div>
                 </div>
@@ -52,7 +54,10 @@
             <div class="col-md-2">
                 <div class="mt-1">
                     <p class="text-muted mb-3">Tổng</p>
-                    <h5>{{ formatCurrency(product.product_price * cart.quantity) }}</h5>
+                    <h5>{{ promotionUser.includes(Cookies.get('role')) ?
+                        formatCurrency((product.product_price - product.product_promotion[0].discount_price) *
+                            cart.quantity) :
+                        formatCurrency(product.product_price * cart.quantity) }}</h5>
                 </div>
             </div>
             <div class="col-md-1">
@@ -70,24 +75,37 @@
 
 <script setup>
 import { onMounted, ref } from 'vue';
-import { useProductStore } from '@/stores/product';
 import { formatCurrency } from '@/helpers/UtilHelper';
-const productStore = useProductStore();
+import Cookies from 'js-cookie';
+import productService from '../../services/product.service';
 const product = ref({});
 const productImg = ref("");
+const promotionUser = ref([]);
 const props = defineProps({
     cart: Object,
     productId: Number,
 });
 
-onMounted(async () => {
-    console.log("Product id: ", props.productId);
-    await productStore.fetchListProduct().finally(() => {
-        product.value = productStore.getProductById(props.productId);
-        productImg.value = JSON.parse(product.value.product_img)[0];
-        console.log("Product hahaha:", product);
-    })
+const fetchProductDetail = async () => {
+    try {
+        const response = await productService.get(props.productId);
+        product.value = response.data;
+        productImg.value = JSON.parse(response.data.product_img)[0];
+        if (response.data.product_promotion.length != 0) {
+            promotionUser.value = JSON.parse(response.data.product_promotion[0].promotion.user_group);
+        } else {
+            promotionUser.value = [];
+        }
+        console.log("Fetch product detail from store: ", response);
+    } catch (error) {
+        console.error('Failed to fetch products:', error);
+    }
+}
+
+onMounted(() => {
+    fetchProductDetail();
 });
+
 </script>
 
 <style scoped>

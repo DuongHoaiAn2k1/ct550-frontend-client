@@ -1,10 +1,11 @@
 <template>
-    <div class="card mx-2">
+    <div class="card mx-2 col col-md-3">
         <div class="image-container">
             <router-link :to="{ name: 'product-detail', params: { id: productId } }">
                 <img :src="image" />
             </router-link>
-            <div class="price">{{ formatCurrency(price) }}</div>
+            <div class="price">{{ product.product_promotion.length != 0 ? formatCurrency(price -
+                product.product_promotion[0].discount_price) : formatCurrency(product.product_price) }}</div>
         </div>
         <label class="favorite">
             <input type="checkbox" :checked="liked" @click="handleCreateProductLike(productId)">
@@ -17,9 +18,17 @@
 
         <div class="content">
             <div class="brand">{{ productName }}</div>
-            <!-- <div class="product-name">{{ subTitle }}</div> -->
+            <div v-show="product.product_promotion.length != 0 && JSON.parse(product.product_promotion[0].promotion.user_group).includes(Cookies.get('role'))"
+                class="product-name">
+                <span class="original-price">{{ formatCurrency(product.product_price) }}</span>
+                <span class="discount">-18%</span>
+            </div>
+            <div v-show="product.product_promotion.length == 0" class="product-name">
+                <span style="color: white;">0</span>
+                <span style="color: white;"> 0</span>
+            </div>
 
-            <div class="rating">
+            <div class=" rating">
                 <svg viewBox="0 0 99.498 16.286" xmlns="http://www.w3.org/2000/svg" class="svg four-star-svg">
                     <path fill="#fc0" transform="translate(-0.001 -1.047)"
                         d="M9.357,1.558,11.282,5.45a.919.919,0,0,0,.692.5l4.3.624a.916.916,0,0,1,.509,1.564l-3.115,3.029a.916.916,0,0,0-.264.812l.735,4.278a.919.919,0,0,1-1.334.967l-3.85-2.02a.922.922,0,0,0-.855,0l-3.85,2.02a.919.919,0,0,1-1.334-.967l.735-4.278a.916.916,0,0,0-.264-.812L.279,8.14A.916.916,0,0,1,.789,6.576l4.3-.624a.919.919,0,0,0,.692-.5L7.71,1.558A.92.92,0,0,1,9.357,1.558Z"
@@ -43,7 +52,7 @@
 
         <div class="button-container">
             <button class="buy-button button">Mua ngay</button>
-            <button class="cart-button button" @click="addToCart(productId)">
+            <button class="cart-button button" @click="addToCart(productId, product.weight)">
                 <svg viewBox="0 0 27.97 25.074" xmlns="http://www.w3.org/2000/svg">
                     <path
                         d="M0,1.175A1.173,1.173,0,0,1,1.175,0H3.4A2.743,2.743,0,0,1,5.882,1.567H26.01A1.958,1.958,0,0,1,27.9,4.035l-2.008,7.459a3.532,3.532,0,0,1-3.4,2.61H8.36l.264,1.4a1.18,1.18,0,0,0,1.156.955H23.9a1.175,1.175,0,0,1,0,2.351H9.78a3.522,3.522,0,0,1-3.462-2.865L3.791,2.669A.39.39,0,0,0,3.4,2.351H1.175A1.173,1.173,0,0,1,0,1.175ZM6.269,22.724a2.351,2.351,0,1,1,2.351,2.351A2.351,2.351,0,0,1,6.269,22.724Zm16.455-2.351a2.351,2.351,0,1,1-2.351,2.351A2.351,2.351,0,0,1,22.724,20.373Z"
@@ -58,6 +67,7 @@
 <script setup>
 import { addToCart } from '../../helpers/CartHelper';
 import { formatCurrency } from '../../helpers/UtilHelper';
+import Cookies from 'js-cookie';
 
 const emit = defineEmits(['handleCreateProductLike']);
 
@@ -71,10 +81,9 @@ const props = defineProps({
         type: String,
         required: true
     },
-    // subTitle: {
-    //     type: String,
-    //     required: true
-    // },
+    product: {
+        type: Object,
+    },
     price: {
         type: Number,
         required: true
@@ -100,6 +109,26 @@ console.log("props in product card: ", props);
 </script>
 
 <style scoped>
+.product-name {
+    font-size: 20px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.product-name .original-price {
+    text-decoration: line-through;
+    /* Gạch ngang giá ban đầu */
+    color: red;
+    /* Bạn có thể chọn màu khác nếu muốn */
+}
+
+.product-name .discount {
+    color: green;
+    /* Màu chữ cho mức giảm giá */
+}
+
 .card {
     --accent-color: #ffd426;
     position: relative;
@@ -186,7 +215,7 @@ console.log("props in product card: ", props);
 .card .content .product-name {
     font-weight: 700;
     color: #666666;
-    font-size: 0.7rem;
+    font-size: 0.8rem;
     margin-bottom: 1rem;
 }
 

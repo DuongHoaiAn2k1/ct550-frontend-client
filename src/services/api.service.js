@@ -35,11 +35,32 @@ export default (baseURL) => {
         error.request &&
         error.response.status == 500 &&
         error.response.data.message == 'Attempt to read property "id" on null'
-        
+        && Cookies.get('isUserLoggedIn') == 'true' && window.location.pathname != '/tokenProcess'
       ) {
         
-        localStorage.setItem("processRefreshToken", true);
+        // localStorage.setItem("processRefreshToken", true);
+        window.location.href = "https://client.dacsancamau.com:3001/tokenProcess";
+      }
+      if (
+        error.request &&
+        error.response.status == 500 &&
+        error.response.data.message == 'Attempt to read property "id" on null'
+        && Cookies.get('isUserLoggedIn') == 'false' && window.location.pathname != '/login'
+      ) {
+        // localStorage.setItem("requireLogin", true);
+        window.location.href = "https://client.dacsancamau.com:3001/login";
+        
+      }
 
+      if(error.request &&
+        error.response.status == 417 &&
+        error.response.data.message == "Refresh token expired"){
+          Cookies.remove("accessTokenUser");
+          Cookies.remove("refreshTokenUser");
+          Cookies.remove("email");
+          Cookies.remove("user_id");
+          Cookies.remove("role");
+          window.location.href = "https://client.dacsancamau.com:3001/login";
       }
       // if (
       //   error.request &&

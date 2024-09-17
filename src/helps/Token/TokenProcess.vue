@@ -6,6 +6,7 @@ import { useAuthStore } from "@/stores/auth";
 import { onMounted } from "vue";
 import { ElLoading } from "element-plus";
 import { useRouter } from "vue-router";
+import Cookies from 'js-cookie';
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -19,10 +20,11 @@ const handlRefresh = async () => {
         authStore.login(
             response.access_token,
             response.refresh_token,
-            response.user_id
+            response.email,
+            response.user_id,
+            response.role
         );
         console.log("After refresh Token: ", response);
-        localStorage.setItem("processRefreshToken", false);
         router.push({ name: "home" });
     } catch (error) {
         console.log(error.response);

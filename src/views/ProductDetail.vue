@@ -27,6 +27,7 @@
 
 <script setup>
 import "../assets/css/PulseLoader.css";
+import Cookies from "js-cookie";
 import usePulseLoader from "../assets/js/PulseLoader.js";
 import ProductDetail from '@/components/Products/ProductDetail.vue';
 import ProductList from '@/components/Products/ProductList.vue';
@@ -125,7 +126,9 @@ const checkUserReviewProduct = async () => {
 };
 
 onMounted(async () => {
-  cartStore.fetchCartCount();
+  if(Cookies.get("isUserLoggedIn") == "true"){
+    cartStore.fetchCartCount();
+  }
   fetchProduct().finally(() => {
     productDetail.value = product.value.product_des.split(".");
     console.log("YEYE: ", productDetail);
@@ -134,15 +137,21 @@ onMounted(async () => {
 
       loading.value = false;
     }, 500);
-    checkUserReviewProduct();
+    if(Cookies.get("isUserLoggedIn") == "true"){
+      checkUserReviewProduct();
+    }
   });
-  await favoriteStore.fetchListFavorite().finally(() => {
+  if(Cookies.get("isUserLoggedIn") == "true"){
+    await favoriteStore.fetchListFavorite().finally(() => {
     updateDetailProductWithLikes();
-  })
+    })
+    increaseProductViews();
+    fetchReviewByProduct();
+    checkBuyingProduct();
+  }
+  
 
-  increaseProductViews();
-  fetchReviewByProduct();
-  checkBuyingProduct();
+  
 });
 
 const handleAddToCart = (product_id) => {

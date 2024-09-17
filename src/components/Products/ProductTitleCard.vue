@@ -3,7 +3,7 @@
         <p class="text-center mb-2 title">{{ title }}</p>
         <div class="row">
             <ProductCard v-for="product in product" :key="product.product_id" :price="product.product_price"
-                :productName="product.product_name" :productId="product.product_id"
+                :productName="product.product_name" :productId="product.product_id" :product="product"
                 :image="'https://dacsancamau.com/storage/' + JSON.parse(product.product_img)[0]"
                 :liked.sync="product.liked" @handleCreateProductLike="handleCreateProductLike" />
         </div>

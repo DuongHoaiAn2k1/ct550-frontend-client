@@ -1,5 +1,5 @@
 import { createWebHistory, createRouter } from "vue-router";
-
+import Cookies from 'js-cookie';
 const routes = [
   {
     path: "/:pathMatch(.*)*",
@@ -22,6 +22,13 @@ const routes = [
     path: "/login",
     name: "login",
     component: () => import("@/views/Login.vue"),
+    beforeEnter : (to, from, next) => {
+      if(Cookies.get('isUserLoggedIn') == 'true'){ 
+        next('/');
+      } else {
+        next();
+      }
+    }
   },
   {
     path: "/product/detail/:id",
@@ -47,6 +54,11 @@ const routes = [
     path: "/tokenProcess",
     name: "token",
     component: () => import("@/helps/Token/TokenProcess.vue"),
+  },
+  {
+    path: "/check-payment",
+    name: "check-payment",
+    component: () => import("@/helps/Payment/PaymentChecking.vue"),
   },
   {
     path: "/payment",

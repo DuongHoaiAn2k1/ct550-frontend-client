@@ -91,6 +91,19 @@
         <div class="text-center p-3 text-content" style="background-color: rgba(0, 0, 0, 0.05)">
             © 2024 B2014552 - Dương Hoài Ân
         </div>
+        <div class="chat-container">
+            <!-- Button để hiển thị Chatbox -->
+            <button class="chatbox" @click="toggleChat">
+                <i class="fa-solid fa-comment"></i>
+            </button>
+
+            <!-- Chatbox component -->
+            <div class="chatbox-container" v-show="isChatVisible">
+                <Chat @toggleChat="toggleChat" />
+            </div>
+        </div>
+
+
         <!-- Copyright -->
         <button class="go-top-btn" @click="goToTop">
             <i class="fa-solid fa-arrow-up"></i>
@@ -100,7 +113,13 @@
 
 <script setup>
 import { ref } from "vue";
+import Chat from "../../components/Chat/ChatBox.vue";
 
+const isChatVisible = ref(false);
+
+const toggleChat = () => {
+    isChatVisible.value = !isChatVisible.value;
+};
 const goToTop = () => {
     window.scrollTo({
         top: 0,
@@ -110,6 +129,62 @@ const goToTop = () => {
 </script>
 
 <style scoped>
+.chat-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    display: flex;
+    align-items: flex-end;
+    z-index: 9999;
+}
+
+.chatbox {
+    position: fixed;
+    bottom: 80px;
+    right: 20px;
+    background-color: #234A2B;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    z-index: 999;
+    border: 2px solid white;
+}
+
+.chatbox-container {
+    margin-left: 10px;
+    width: 300px;
+    /* Đặt chiều rộng cố định cho Chatbox */
+    height: 400px;
+    /* Đặt chiều cao cố định cho Chatbox */
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+@media (max-width: 768px) {
+    .chatbox-container {
+        width: 100%;
+        /* Điều chỉnh chiều rộng Chatbox cho màn hình nhỏ hơn */
+        height: 50%;
+        /* Điều chỉnh chiều cao Chatbox cho màn hình nhỏ hơn */
+        position: fixed;
+        bottom: 70px;
+        /* Đảm bảo nút chat không bị che */
+        right: 0;
+        left: 0;
+        margin: 0 auto;
+        border-radius: 15px 15px 0 0;
+        /* Làm tròn góc trên của Chatbox */
+    }
+
+    .chatbox {
+        bottom: 60px;
+        right: 20px;
+    }
+}
+
 .go-top-btn {
     position: fixed;
     bottom: 20px;
@@ -121,6 +196,8 @@ const goToTop = () => {
     border-radius: 5px;
     cursor: pointer;
     z-index: 999;
+    border: 2px solid white;
+
 }
 
 .background-footer {

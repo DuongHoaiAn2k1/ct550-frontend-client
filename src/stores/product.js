@@ -13,7 +13,7 @@ export const useProductStore = defineStore("product", {
       try {
         const response = await productService.getAll();
         this.listProduct = response.listProduct;
-        console.log("List product ref store: ", response);
+        // console.log("List product ref store: ", response);
       } catch (error) {
         console.log(error.response);
       }
@@ -36,7 +36,7 @@ export const useProductStore = defineStore("product", {
           category_name: "Tôm khô Cà Mau",
         });
         this.shrimpList = response.data.slice(0, 5);
-        console.log("Tôm: ", response);
+        // console.log("Tôm: ", response);
       } catch (error) {
         console.log(error.response);
       }
@@ -56,6 +56,13 @@ export const useProductStore = defineStore("product", {
 
     getProductName(product_id) {
       return this.listProduct.find(product => product.product_id == product_id)?.product_name;
+    },
+
+    getRoleProductPromotion(product_id) {
+      const product = this.listProduct.find(product => product.product_id == product_id);
+      // console.log("product id check role: ", product_id);
+      // console.log("Product: check role ", product);
+      return product?.product_promotion.length > 0 ? JSON.parse(product.product_promotion[0].promotion.user_group) : [];
     }
   },
 });

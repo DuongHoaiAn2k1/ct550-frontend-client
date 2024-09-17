@@ -12,7 +12,7 @@
     <div class="row text-center">
       <Category v-for="category in categoryStore.listCategory" :title="category.category_name"
         :categoryId="category.category_id" :key="category.category_id"
-        :image="'../../assets/images/category/' + category.category_name + '.jpg'" AcctionDetail="Xem thêm" />
+        :image="'https://dacsancamau.com/storage/' + category.image" AcctionDetail="Xem thêm" />
     </div>
 
   </div>
@@ -47,7 +47,7 @@
             </h5>
 
             <div class="d-grid gap-2">
-              <a v-show="product.product_quantity != 0" @click="addToCart(product.product_id)"
+              <a v-show="product.product_quantity != 0" @click="addToCart(product.product_id, product.weight)"
                 class="btn btn-warning bold-btn">Thêm</a>
               <a v-show="product.product_quantity == 0" class="btn btn-warning bold-btn">Thêm</a>
             </div>
@@ -77,13 +77,14 @@
 <script setup>
 import "../assets/card.css";
 import "../assets/css/PulseLoader.css";
+import Cookies from "js-cookie";
 import Category from "./Categories/Category.vue";
 import ProductTitleCard from "./Products/ProductTitleCard.vue";
 import usePulseLoader from "../assets/js/PulseLoader.js";
 import favoriteService from "@/services/favorite.service";
 import productService from "@/services/product.service";
 import { useSearchStore } from "@/stores/search";
-import { onMounted, reactive, ref, watch } from "vue";
+import { onMounted, ref, watch } from "vue";
 import { useAuthStore } from "@/stores/auth";
 import cartService from "@/services/cart.service";
 import { useCategoryStore } from "@/stores/category";
@@ -194,7 +195,9 @@ watch(
 
 onMounted(async () => {
   await categoryStore.fetchListCategory();
-  await favoriteStore.fetchListFavorite();
+  if (Cookies.get('isUserLoggedIn') == 'true') {
+    await favoriteStore.fetchListFavorite();
+  }
   await productStore.fetchListFish();
   await productStore.fetchListShrimp()
 
@@ -209,11 +212,11 @@ onMounted(async () => {
     updateFishListWithLikes();
     updateShrimpListWithLikes();
     loading.value = false;
-    console.log("List fish after update likes: ", productStore.fishList);
+    // console.log("List fish after update likes: ", productStore.fishList);
   }, 3000);
 
 });
-const addToCart = async (product_id) => {
+const addToCart = async (product_id, weight) => {
   if (authStore.isUserLoggedIn) {
     try {
       const user_id = authStore.user_id;
@@ -221,6 +224,7 @@ const addToCart = async (product_id) => {
         user_id: user_id,
         product_id: product_id,
         quantity: 1,
+        total_weight: weight,
       });
       await cartStore.fetchCartCount();
       console.log("Ket qua them: ", response);

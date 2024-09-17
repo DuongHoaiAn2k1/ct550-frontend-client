@@ -8,7 +8,7 @@
               <div class="col-md-3">
                 <div class="text-center border-end">
                   <img
-                    :src="userData.avatar ? userData.avatar : 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png'"
+                    :src="userData.avatar ? userData.avatar : userData.image ? 'https://dacsancamau.com/storage/' + userData.image : 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png'"
                     class="img-fluid avatar-xxl rounded-circle" alt="" />
                   <h4 class="text-dark font-size-20 mt-3 mb-2">
                     {{ userData.name }}
@@ -72,14 +72,14 @@
                               <div class="">Mã đơn hàng:</div>
                             </div>
                             <div class="row align-items-center">
-                              <div class="col-xl-2 col-md-6">
+                              <div class="col-xl-3 col-md-6">
                                 <div class="font-size-15">
                                   <label class="form-check-label task-title" for="customChat">#{{ data.bill_id
                                     }}</label>
                                 </div>
                               </div>
                               <!-- end col -->
-                              <div class="col-xl-10 col-md-6">
+                              <div class="col-xl-9 col-md-6">
                                 <div class="row align-items-center">
                                   <div class="col-2 detail-off">
                                     <div class="avatar-group mt-3 mt-xl-0 task-assigne">
@@ -100,22 +100,22 @@
                                   <div class="col-xl-2 col-md-6 detail-on">
                                     {{ formatCurrency(data.total_cost) }}
                                   </div>
-                                  <div class="col-4 detail-off">
+                                  <div class="col-2 detail-off">
                                     {{ convertTime(data.created_at) }}
                                   </div>
                                   <!-- end col -->
-                                  <div class="col-2 detail-off">
+                                  <div class="col-3 detail-off">
                                     <div class="d-flex flex-wrap gap-3 mt-3 mt-xl-0 justify-content-md-end">
                                       <div>
-                                        <span v-show="data.status == '1'"
+                                        <span v-show="data.status == 'preparing'"
                                           class="badge rounded-pill text-info font-size-11 task-status">Đang chuẩn
                                           bị</span>
-                                        <span v-show="data.status == '2'"
+                                        <span v-show="data.status == 'delivering'"
                                           class="badge rounded-pill orange font-size-11 task-status">Đang giao</span>
-                                        <span v-show="data.status == '3'"
+                                        <span v-show="data.status == 'delivered'"
                                           class="badge rounded-pill text-success font-size-11 task-status">Đã
                                           giao</span>
-                                        <span v-show="data.status == '0'"
+                                        <span v-show="data.status == 'cancelled'"
                                           class="badge rounded-pill red font-size-11 task-status">Đã hủy</span>
                                       </div>
 
@@ -134,7 +134,7 @@
                                     </div>
                                   </div>
 
-                                  <div class="col-xl-2 col-md-6 detail-on">
+                                  <div class="col-xl-3 col-md-6 detail-on">
                                     <router-link :to="{
                                       name: 'order-detail',
                                       params: { id: data.order_id },
@@ -317,7 +317,8 @@
                 <i class="fa-solid fa-pen-to-square"></i> Cập nhật thông tin tài
                 khoản
               </li>
-              <li class="list-group-item list-group-item-action my-1 btn" @click="dialogUpdatePassword = true">
+              <li class="list-group-item list-group-item-action my-1 btn" @click="dialogUpdatePassword = true"
+                :class="Cookies.get('isGoogleLogin') ? 'disabled-item' : ''">
                 <i class="fa-solid fa-key"></i> Đổi mật khẩu
               </li>
               <li class="list-group-item list-group-item-action my-1 btn">
@@ -396,27 +397,27 @@
     </section>
   </el-dialog>
   <el-dialog v-model="dialogUpdateProfile" title="Cập nhật thông tin tài khoản" width="800">
-    <div class="mb-3 row">
-      <label for="staticEmail" class="col-sm-2 col-form-label">HỌ VÀ TÊN</label>
-      <div class="col-sm-10">
-        <input v-model="nameUser" class="form-control" list="datalistOptions" id="exampleDataList" />
+    <form @submit.prevent="handleUpdateUser" enctype="multipart/form-data">
+      <div class="mb-3 row">
+        <label for="staticEmail" class="col-sm-2 col-form-label">HỌ VÀ TÊN</label>
+        <div class="col-sm-10">
+          <input v-model="nameUser" type="text" name="name" class="form-control" list="datalistOptions"
+            id="exampleDataList" />
+        </div>
+        <span class="text-danger text-center">{{ nameUserError }}</span>
+        <label for="staticEmail" class="col-sm-2 col-form-label">Hình ảnh</label>
+        <div class="col-sm-10 mt-1">
+          <input type="file" @change="handleImageUpload" name="image" />
+        </div>
       </div>
-      <span class="text-danger text-center">{{ nameUserError }}</span>
-    </div>
-    <!-- <div class="mb-3 row">
-          <label for="inputPassword" class="col-sm-2 col-form-label"
-            >MẬT KHẨU</label
-          >
-          <div class="col-sm-10">
-            <input type="password" class="form-control" id="inputPassword" />
-          </div>
-        </div> -->
-    <div class="mb-3 row">
-      <button @click="handleUpdateNameOfUser(nameUser)" type="button" class="btn btn-success">
-        Cập nhật
-      </button>
-    </div>
+      <div class="mb-3 row">
+        <button type="submit" class="btn btn-success">
+          Cập nhật
+        </button>
+      </div>
+    </form>
   </el-dialog>
+
 
   <el-dialog v-model="dialogUpdatePassword" title="Đổi mật khẩu" width="800">
     <div class="mb-3 row">
@@ -448,6 +449,7 @@
 
 <script setup>
 import * as Yup from "yup";
+import Cookies from 'js-cookie';
 import userService from "@/services/user.service";
 import { computed, onMounted, reactive, ref, watchEffect } from "vue";
 import { useAuthStore } from "@/stores/auth";
@@ -484,6 +486,7 @@ const authStore = useAuthStore();
 const orderStore = useOrderStore();
 const userData = ref({});
 const nameUser = ref("");
+const imageUpdate = ref("");
 const listAddressUser = ref([]);
 const currentPage = ref(1);
 const pageSize = 4;
@@ -569,31 +572,50 @@ const deleteFavorite = async (productId) => {
   }
 };
 
-const updateNameUser = async (name) => {
+const updateNameUser = async (data) => {
   try {
-    const response = await userService.update({ name: name });
+    for (let [key, value] of data.entries()) {
+      console.log(`${key}: ${value}`);
+    }
+    const response = await userService.update(data);
     console.log(response);
   } catch (error) {
     console.log(error.response);
   }
 };
 
-const nameUserError = ref("");
-const handleUpdateNameOfUser = (name) => {
-  if (name == "") {
-    nameUserError.value = "Họ và tên không được để trống";
-  } else {
-    updateNameUser(name);
-    const loading = showLoading();
 
+
+const nameUserError = ref("");
+const handleUpdateUser = async () => {
+  if (!nameUser.value.trim()) { // Ensure no empty or whitespace values
+    nameUserError.value = "Họ và tên không được để trống";
+    return;
+  }
+
+  const dataUpdate = new FormData();
+  dataUpdate.append("name", nameUser.value.trim()); // Trim spaces before appending
+  if (imageUpdate.value) {
+    dataUpdate.append("image", imageUpdate.value);
+  }
+
+  try {
+    await updateNameUser(dataUpdate);
+    const loading = showLoading();
     setTimeout(() => {
       showSuccess("Cập nhật thành công");
       fetchUserData();
       loading.close();
       dialogUpdateProfile.value = false;
     }, 2000);
+  } catch (error) {
+    console.log(error.response);
   }
 };
+
+
+
+
 
 const schemaPass = Yup.object().shape({
   oldPass: Yup.string()
@@ -740,6 +762,15 @@ const handleFetchCartCount = async () => {
   }
 };
 
+const handleImageUpload = (event) => {
+  const file = event.target.files[0];
+  if (file) {
+    imageUpdate.value = file;
+    console.log(file);
+  }
+};
+
+
 onMounted(async () => {
   handleFetchCartCount();
   fetchUserData();
@@ -783,6 +814,13 @@ const paginatedList = computed(() => {
 </script>
 
 <style scoped>
+.disabled-item {
+  cursor: not-allowed;
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+
 .design-fontweight-600 {
 
   font-weight: 600;

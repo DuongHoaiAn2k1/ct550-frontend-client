@@ -11,6 +11,14 @@ class NotificationService {
     async create(data) {
         return (await this.api.post("/",data)).data;
     }
+
+    async getByUser() {
+        return (await this.api.get("/user")).data
+    }
+
+    async userReadAll() {
+        return (await this.api.post("/user/read/all")).data
+    }
 }
 
 export default new NotificationService()

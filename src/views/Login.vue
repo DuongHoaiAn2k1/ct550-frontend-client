@@ -39,11 +39,11 @@
                 </button>
               </div>
 
-              <div class="d-grid">
+              <!-- <div class="d-grid">
                 <button class="btn btn-lg btn-facebook btn-login fw-bold text-uppercase" @click="notificationLogin">
                   <i class="fab fa-facebook-f me-2"></i> Đăng nhập với Facebook
                 </button>
-              </div>
+              </div> -->
             </form>
           </div>
         </div>
@@ -54,6 +54,7 @@
 
 <script setup>
 import * as Yup from "yup";
+import Cookies from "js-cookie";
 import { ref, reactive, onMounted } from "vue";
 import { ElLoading, ElNotification } from "element-plus";
 import { useAuthStore } from "@/stores/auth";
@@ -109,9 +110,11 @@ const submitLogin = async (event) => {
           console.log(response);
           const access_token = response.access_token;
           const refresh_token = response.refresh_token;
+          const email = response.email;
           const user_id = response.user_id;
-          authStore.login(access_token, refresh_token, user_id);
+          authStore.login(access_token, refresh_token, email, user_id);
           // Cookies.set("token", token, { expires: 1 });
+          localStorage.setItem("requireLogin", false);
           showSuccess("Đăng nhập thành công");
           setTimeout(() => {
             router.push({ name: "home" });
@@ -160,9 +163,13 @@ const loginWithGoogle = () => {
 
   window.addEventListener('message', (event) => {
     if (event.origin === 'https://dacsancamau.com') {
-      const { access_token, refresh_token, user_id } = event.data;
+      const { access_token, refresh_token, user_id, email, role, google_id } = event.data;
       newWindow.close();
-      authStore.login(access_token, refresh_token, user_id);
+      if (google_id != null) {
+        Cookies.set("isGoogleLogin", true, { expires: 7 });
+      }
+      authStore.login(access_token, refresh_token, email, user_id, role);
+      localStorage.setItem("requireLogin", false);
       showSuccess("Đăng nhập thành công");
       setTimeout(() => {
         router.push({ name: 'home' });
@@ -173,9 +180,9 @@ const loginWithGoogle = () => {
   const interval = setInterval(() => {
     if (newWindow.closed) {
       clearInterval(interval);
-      const access_token = localStorage.getItem('accessTokenUser');
-      const refresh_token = localStorage.getItem('refreshTokenUser');
-      const user_id = localStorage.getItem('user_id');
+      const access_token = Cookies.get("accessTokenUser");
+      const refresh_token = Cookies.get("refreshTokenUser");
+      const user_id = Cookies.get("user_id");
 
       if (!access_token || !refresh_token || !user_id) {
         showWarning("Email hoặc mật khẩu không chính xác");
@@ -186,6 +193,9 @@ const loginWithGoogle = () => {
 
 onMounted(() => {
   console.log("List Product from Pinia Store: ", productStore.listProduct);
+  if (localStorage.getItem('requireLogin') == 'true') {
+    showWarning("Vui lòng đăng nhập")
+  }
 });
 </script>
 

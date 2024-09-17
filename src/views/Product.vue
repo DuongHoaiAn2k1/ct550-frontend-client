@@ -3,7 +3,7 @@
     <div class="row text-center">
       <Category v-for="category in categoryStore.listCategory" :title="category.category_name"
         :categoryId="category.category_id" :key="category.category_id"
-        :image="'../../assets/images/category/' + category.category_name + '.jpg'" AcctionDetail="Xem thêm" />
+        :image="'https://dacsancamau.com/storage/' + category.image" AcctionDetail="Xem thêm" />
     </div>
   </div>
 

@@ -32,6 +32,14 @@ class OrderService {
   async cancel(id) {
     return (await this.api.patch(`/${id}`)).data;
   }
+
+  async update(data, id) {
+    return (await this.api.patch(`/update/${id}`, data)).data;
+  }
+
+  async updateStatus(data, id) {
+    return (await this.api.patch(`/bill/update/${id}`, data)).data;
+  }
 }
 
 export default new OrderService();
