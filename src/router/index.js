@@ -100,6 +100,11 @@ const routes = [
     name: "contact",
     component: () => import("@/views/Contact.vue"),
   },
+  {
+    path: "/affiliate",
+    name: "affiliate",
+    component: () => import("@/views/Affiliate.vue"),
+  }
 ];
 
 const router = createRouter({

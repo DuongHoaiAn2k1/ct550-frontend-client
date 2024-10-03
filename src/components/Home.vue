@@ -11,8 +11,8 @@
     <div class="text-center mb-2"><span style="font-weight: 600; font-size: 24px">Danh mục sản phẩm</span></div>
     <div class="row text-center">
       <Category v-for="category in categoryStore.listCategory" :title="category.category_name"
-        :categoryId="category.category_id" :key="category.category_id"
-        :image="'https://dacsancamau.com/storage/' + category.image" AcctionDetail="Xem thêm" />
+        :categoryId="category.category_id" :key="category.category_id" :image="apiUrl + category.image"
+        AcctionDetail="Xem thêm" />
     </div>
 
   </div>
@@ -28,7 +28,7 @@
       <div class="col hp" v-for="product in listProductByName" :key="product.product_id">
         <div class="card h-100 shadow-sm">
           <router-link :to="{ name: 'product-detail', params: { id: product.product_id } }">
-            <img :src="'http://127.0.0.1:8000/storage/' +
+            <img :src="apiUrl +
               JSON.parse(product.product_img)[0]
               " class="card-img-top" alt="product.title" />
           </router-link>
@@ -96,6 +96,8 @@ import { formatCurrency } from '@/helpers/UtilHelper';
 import { showSuccess, showWarning, showSuccessMessage } from "@/helpers/NotificationHelper";
 const { loading, spinnerStyle, spinnerDelay1, spinnerDelay2, spinnerDelay3 } =
   usePulseLoader();
+const apiUrl = import.meta.env.VITE_APP_API_URL;
+
 const router = useRouter();
 const productStore = useProductStore();
 const favoriteStore = useFavoriteStore();
@@ -228,7 +230,7 @@ const addToCart = async (product_id, weight) => {
       });
       await cartStore.fetchCartCount();
       console.log("Ket qua them: ", response);
-      shhowSuccess("Them vào giỏ hàng thành công");
+      showSuccess("Them vào giỏ hàng thành công");
     } catch (error) {
       console.log(error.response);
       if (error.response.data.message === "Qúa số lượng cho phép") {

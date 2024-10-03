@@ -80,20 +80,21 @@
                         <i class="fas fa-user dropdown-toggle user-design" data-bs-toggle="dropdown"
                             aria-expanded="false"></i>
                         <ul class="dropdown-menu dropdown-menu-center">
-                            <li v-show="!authStore.isUserLoggedIn">
+                            <li v-if="!authStore.isUserLoggedIn">
                                 <router-link :to="{ name: 'login' }" class="dropdown-item">Đăng nhập</router-link>
                             </li>
-                            <li v-show="!authStore.isUserLoggedIn">
+                            <li v-if="!authStore.isUserLoggedIn">
                                 <router-link :to="{ name: 'register' }" class="dropdown-item">Đăng ký</router-link>
                             </li>
-                            <li v-show="authStore.isUserLoggedIn">
+                            <li v-if="authStore.isUserLoggedIn">
                                 <router-link :to="{ name: 'profile' }" class="dropdown-item">Tài khoản</router-link>
                             </li>
-                            <li v-show="authStore.isUserLoggedIn" @click="handleLogOut">
+                            <li v-if="authStore.isUserLoggedIn" @click="handleLogOut">
                                 <button class="dropdown-item">Đăng xuất</button>
                             </li>
                         </ul>
                     </div>
+
                 </div>
             </div>
         </nav>
@@ -151,6 +152,17 @@ echoInstance.channel('admin-channel')
         await notificationStore.getByUser();
 
     });
+
+
+echoInstance.channel('affiliate-approved').listen('.affiliate-approved', async (event) => {
+    console.log('Affiliate approved');
+    const response = await notificationService.create({
+        message: 'Yêu cầu tiếp thị của bạn đã được xét duyệt',
+        route_name: 'profile',
+        type: 'user'
+    });
+    await notificationStore.getByUser();
+});
 
 onMounted(async () => {
 

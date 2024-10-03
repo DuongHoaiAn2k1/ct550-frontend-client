@@ -95,11 +95,14 @@
             <!-- Button để hiển thị Chatbox -->
             <button class="chatbox" @click="toggleChat">
                 <i class="fa-solid fa-comment"></i>
+                <span v-show="countUnRead != 0" class="badge rounded-pill badge-notification bg-danger design-count">{{
+                    countUnRead
+                    }}</span>
             </button>
 
             <!-- Chatbox component -->
             <div class="chatbox-container" v-show="isChatVisible">
-                <Chat @toggleChat="toggleChat" />
+                <Chat @toggleChat="toggleChat" :is-chat-visible="isChatVisible" @value-changed="countUnReadfuction" />
             </div>
         </div>
 
@@ -116,6 +119,7 @@ import { ref } from "vue";
 import Chat from "../../components/Chat/ChatBox.vue";
 
 const isChatVisible = ref(false);
+const countUnRead = ref(0);
 
 const toggleChat = () => {
     isChatVisible.value = !isChatVisible.value;
@@ -126,16 +130,24 @@ const goToTop = () => {
         behavior: "smooth",
     });
 };
+
+const countUnReadfuction = (newValue) => {
+    countUnRead.value = newValue;
+}
 </script>
 
 <style scoped>
+.design-count {
+    font-size: 8px;
+    position: absolute;
+}
+
 .chat-container {
-    position: fixed;
+    position: relative;
     bottom: 20px;
     right: 20px;
     display: flex;
     align-items: flex-end;
-    z-index: 9999;
 }
 
 .chatbox {
@@ -153,37 +165,10 @@ const goToTop = () => {
 }
 
 .chatbox-container {
-    margin-left: 10px;
-    width: 300px;
-    /* Đặt chiều rộng cố định cho Chatbox */
-    height: 400px;
-    /* Đặt chiều cao cố định cho Chatbox */
-    border-radius: 15px;
-    overflow: hidden;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    position: absolute
 }
 
-@media (max-width: 768px) {
-    .chatbox-container {
-        width: 100%;
-        /* Điều chỉnh chiều rộng Chatbox cho màn hình nhỏ hơn */
-        height: 50%;
-        /* Điều chỉnh chiều cao Chatbox cho màn hình nhỏ hơn */
-        position: fixed;
-        bottom: 70px;
-        /* Đảm bảo nút chat không bị che */
-        right: 0;
-        left: 0;
-        margin: 0 auto;
-        border-radius: 15px 15px 0 0;
-        /* Làm tròn góc trên của Chatbox */
-    }
-
-    .chatbox {
-        bottom: 60px;
-        right: 20px;
-    }
-}
+@media only screen and (max-width: 767px) {}
 
 .go-top-btn {
     position: fixed;

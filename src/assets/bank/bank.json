@@ -1,0 +1,130 @@
+{
+    "data": [
+        {
+            "id": 1,
+            "name": "Ngân hàng TMCP Công thương Việt Nam",
+            "code": "ICB",
+            "shortName": "VietinBank",
+            "logo": "https://api.vietqr.io/img/ICB.png"
+        },
+        {
+            "id": 2,
+            "name": "Ngân hàng TMCP Ngoại Thương Việt Nam",
+            "code": "VCB",
+            "shortName": "Vietcombank",
+            "logo": "https://api.vietqr.io/img/VCB.png"
+        },
+        {
+            "id": 3,
+            "name": "Ngân hàng TMCP Đầu tư và Phát triển Việt Nam",
+            "code": "BIDV",
+            "shortName": "BIDV",
+            "logo": "https://api.vietqr.io/img/BIDV.png"
+        },
+        {
+            "id": 4,
+            "name": "Ngân hàng Nông nghiệp và Phát triển Nông thôn Việt Nam",
+            "code": "VBA",
+            "shortName": "Agribank",
+            "logo": "https://api.vietqr.io/img/VBA.png"
+        },
+        {
+            "id": 5,
+            "name": "Ngân hàng TMCP Phương Đông",
+            "code": "OCB",
+            "shortName": "OCB",
+            "logo": "https://api.vietqr.io/img/OCB.png"
+        },
+        {
+            "id": 6,
+            "name": "Ngân hàng TMCP Quân đội",
+            "code": "MB",
+            "shortName": "MBBank",
+            "logo": "https://api.vietqr.io/img/MB.png"
+        },
+        {
+            "id": 7,
+            "name": "Ngân hàng TMCP Kỹ thương Việt Nam",
+            "code": "TCB",
+            "shortName": "Techcombank",
+            "logo": "https://api.vietqr.io/img/TCB.png"
+        },
+        {
+            "id": 8,
+            "name": "Ngân hàng TMCP Á Châu",
+            "code": "ACB",
+            "shortName": "ACB",
+            "logo": "https://api.vietqr.io/img/ACB.png"
+        },
+        {
+            "id": 9,
+            "name": "Ngân hàng TMCP Việt Nam Thịnh Vượng",
+            "code": "VPB",
+            "shortName": "VPBank",
+            "logo": "https://api.vietqr.io/img/VPB.png"
+        },
+        {
+            "id": 10,
+            "name": "Ngân hàng TMCP Tiên Phong",
+            "code": "TPB",
+            "shortName": "TPBank",
+            "logo": "https://api.vietqr.io/img/TPB.png"
+        },
+        {
+            "id": 11,
+            "name": "Ngân hàng TMCP Sài Gòn Thương Tín",
+            "code": "STB",
+            "shortName": "Sacombank",
+            "logo": "https://api.vietqr.io/img/STB.png"
+        },
+        {
+            "id": 12,
+            "name": "Ngân hàng TMCP Phát triển Thành phố Hồ Chí Minh",
+            "code": "HDB",
+            "shortName": "HDBank",
+            "logo": "https://api.vietqr.io/img/HDB.png"
+        },
+        {
+            "id": 13,
+            "name": "Ngân hàng TMCP Bản Việt",
+            "code": "VCCB",
+            "shortName": "VietCapitalBank",
+            "logo": "https://api.vietqr.io/img/VCCB.png"
+        },
+        {
+            "id": 14,
+            "name": "Ngân hàng TMCP Sài Gòn",
+            "code": "SCB",
+            "shortName": "SCB",
+            "logo": "https://api.vietqr.io/img/SCB.png"
+        },
+        {
+            "id": 15,
+            "name": "Ngân hàng TMCP Quốc tế Việt Nam",
+            "code": "VIB",
+            "shortName": "VIB",
+            "logo": "https://api.vietqr.io/img/VIB.png"
+        },
+        {
+            "id": 16,
+            "name": "Ngân hàng TMCP Sài Gòn - Hà Nội",
+            "code": "SHB",
+            "shortName": "SHB",
+            "logo": "https://api.vietqr.io/img/SHB.png"
+        },
+        {
+            "id": 17,
+            "name": "Ngân hàng TMCP Xuất Nhập khẩu Việt Nam",
+            "code": "EIB",
+            "shortName": "Eximbank",
+            "logo": "https://api.vietqr.io/img/EIB.png"
+        },
+        {
+            "id": 18,
+            "name": "Ngân hàng TMCP Hàng Hải",
+            "code": "MSB",
+            "shortName": "MSB",
+            "logo": "https://api.vietqr.io/img/MSB.png"
+        }
+    ]
+}

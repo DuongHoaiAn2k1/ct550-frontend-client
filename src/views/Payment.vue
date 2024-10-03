@@ -54,7 +54,7 @@
                           <span class="small">Giá:
                             {{
                               getProduct(data.product_id)?.product_promotion.length > 0 &&
-                                JSON.parse(getProduct(data.product_id)?.product_promotion[0].promotion.user_group).includes(Cookies.get('role'))
+                                JSON.parse(getProduct(data.product_id)?.product_promotion[0].promotion.user_group).includes(atob(Cookies.get('role')))
                                 ? formatCurrency(getProduct(data.product_id)?.product_price -
                                   getProduct(data.product_id)?.product_promotion[0].discount_price) :
                                 formatCurrency(getProduct(data.product_id)?.product_price)
@@ -67,7 +67,7 @@
                       {{
                         getProduct(data.product_id)?.product_promotion.length > 0
                           &&
-                          JSON.parse(getProduct(data.product_id)?.product_promotion[0]?.promotion.user_group).includes(Cookies.get('role'))
+                          JSON.parse(getProduct(data.product_id)?.product_promotion[0]?.promotion.user_group).includes(atob(Cookies.get('role')))
                           ? formatCurrency((getProduct(data.product_id)?.product_price -
                             getProduct(data.product_id)?.product_promotion[0].discount_price) * data.quantity) :
                           formatCurrency(getProduct(data.product_id)?.product_price * data.quantity)
@@ -237,6 +237,9 @@ import order_detailService from "@/services/order_detail.service";
 import batchService from "../services/batch.service";
 import notificationService from "../services/notification.service";
 import paymentService from "../services/payment.service";
+import affiliateService from "../services/affiliate.service";
+
+const atob = (str) => window.atob(str);
 const router = useRouter();
 const cartStore = useCartStore();
 const authStore = useAuthStore();
@@ -261,6 +264,7 @@ const pointUsed = ref(0);
 const currentPoint = ref(0);
 const payMethod = ref("cod");
 const checkStockResult = ref('');
+const loading = showLoading();
 
 const checkStockAvailable = async (data) => {
   try {
@@ -327,6 +331,22 @@ const getProduct = (id) => {
   return listProduct.value.filter((data) => data.product_id == id)[0];
 };
 
+const handleCreateSale = async (orderId, quantity) => {
+  try {
+    const response = await affiliateService.createSale({
+      affiliate_user_id: Cookies.get('affiliateUserId'),
+      product_id: Cookies.get('productAffiliateId'),
+      order_id: orderId,
+      quantity: quantity
+    });
+    console.log("After create sale: ", response);
+  } catch (error) {
+    console.log(error.response);
+  }
+}
+
+const affiliateProductQuantity = ref(0);
+
 const handleTotal = () => {
   totalMoney.value = 0;
   totalWeight.value = 0;
@@ -336,11 +356,15 @@ const handleTotal = () => {
     // console.log("Product: ", getProduct(cart.product_id).product_price);
     totalWeight.value = totalWeight.value + getProduct(cart.product_id).weight * cart.quantity;
     number.value = number.value + cart.quantity;
+    if (Cookies.get('affiliateUserId') && Cookies.get('productAffiliateId') && Cookies.get('productAffiliateId') == cart.product_id) {
+      // handleCreateSale(cart.order_id, cart.quantity);
+      affiliateProductQuantity.value = cart.quantity;
+    }
     var role = [];
     role = productStore.getRoleProductPromotion(cart.product_id);
     // console.log("Current Product: ", currentProduct);
     // console.log("Role: ", role);
-    if (role?.includes(Cookies.get('role'))) {
+    if (role?.includes(atob(Cookies.get('role')))) {
       totalMoney.value =
         totalMoney.value +
         (getProduct(cart.product_id).product_price - getProduct(cart.product_id).product_promotion[0].discount_price) * cart.quantity;
@@ -378,15 +402,6 @@ const handleCreateOrderDetail = async (data) => {
   }
 }
 
-const handleReduceStock = async (data) => {
-  try {
-    const response = await productService.reduceStock(data);
-    console.log("After reduce stock: ", response);
-    return response;
-  } catch (error) {
-    console.log(error.response);
-  }
-}
 
 const preprocessOrder = async () => {
   checkStockAvailable(cartData.value).then(async () => {
@@ -475,12 +490,15 @@ const handleOrder = async (status) => {
         notificationService.create({
           message: 'Đơn hàng đã đặt thành công',
           route_name: 'order',
-          type: 'user'
+          type: 'admin'
         })
       ]);
       // Kiểm tra nếu tạo đơn hàng thành công
       if (orderResponse && orderResponse.order_id) {
         const order_id = orderResponse.order_id;
+
+        handleCreateSale(order_id, affiliateProductQuantity.value);
+
         for (const item of cartData.value) {
           var role = [];
           role = productStore.getRoleProductPromotion(item.product_id);
@@ -491,7 +509,7 @@ const handleOrder = async (status) => {
           const reduceStockResponse = await batchService.reduceStock(productDecreaseQuantity);
 
           var totalCostDetail = 0;
-          if (role?.includes(Cookies.get('role'))) {
+          if (role?.includes(atob(Cookies.get('role')))) {
             totalCostDetail = (getProduct(item.product_id)?.product_price - getProduct(item.product_id)?.product_promotion[0]?.discount_price) * item.quantity
           } else {
             totalCostDetail = getProduct(item.product_id)?.product_price * item.quantity
@@ -513,10 +531,10 @@ const handleOrder = async (status) => {
 
         await userService.pointDecrement({ point_used: pointUsed.value });
         if (payMethod.value == 'cod') {
-          const loading = showLoading();
+          const loadingNotification = showLoading();
           setTimeout(() => {
             showSuccess("Đặt hàng thành công");
-            loading.close();
+            loadingNotification.close();
             setTimeout(() => {
               handleDeleteCart();
               cartStore.deleteCart();
@@ -562,9 +580,7 @@ onMounted(() => {
     now.getHours().toString().padStart(2, '0') +
     now.getMinutes().toString().padStart(2, '0') +
     now.getSeconds().toString().padStart(2, '0');
-
   bill_id.value = formattedDate + authStore.user_id;
-
 
   fetchListProduct();
   fetchCartData();
@@ -574,10 +590,11 @@ onMounted(() => {
   setTimeout(() => {
     handleTotal();
     handleCalculateShippingFee();
-    // console.log("Product: ", getProduct(9));
-    // console.log("address x: ", addressOrder);
     console.log("Total Money: ", totalMoney);
     // console.log("Phi ship: ", calculateShippingFee(4));
+    setTimeout(() => {
+      loading.close();
+    }, 1000);
   }, 1000);
   // console.log(cartStore.addressToPay);
 });

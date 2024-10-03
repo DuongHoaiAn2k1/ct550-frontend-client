@@ -43,13 +43,20 @@ const toggleNotifications = () => {
 
 const notificationOptions = {
     'order': {
-        message: 'Có đơn hàng mới',
+        message: 'Đơn hàng đã được đặt',
         sub: 'Đơn hàng được tạo vào lúc'
+    },
+    'profile': {
+        message: 'Yêu cầu của bạn đã được xét duyệt',
+        sub: 'Tiếp thị liên kết'
     }
 }
 
 const routeNameUser = {
     'order': {
+        name: 'profile',
+    },
+    'profile': {
         name: 'profile',
     }
 }
@@ -149,7 +156,7 @@ onMounted(async () => {
 
 .toggle-btn {
     width: 95%;
-    padding: 10px;
+    padding: 2px;
     border: none;
     background-color: #000;
     color: #ffffff;

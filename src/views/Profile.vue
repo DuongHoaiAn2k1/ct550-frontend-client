@@ -8,7 +8,7 @@
               <div class="col-md-3">
                 <div class="text-center border-end">
                   <img
-                    :src="userData.avatar ? userData.avatar : userData.image ? 'https://dacsancamau.com/storage/' + userData.image : 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png'"
+                    :src="userData.avatar ? userData.avatar : userData.image ? apiUrl + userData.image : 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png'"
                     class="img-fluid avatar-xxl rounded-circle" alt="" />
                   <h4 class="text-dark font-size-20 mt-3 mb-2">
                     {{ userData.name }}
@@ -88,7 +88,7 @@
                                           data-bs-placement="top" value="member-3" aria-label="Annmarie Paul"
                                           data-bs-original-title="Annmarie Paul">
                                           <img
-                                            :src="'https://dacsancamau.com/storage/' + JSON.parse((data?.order_detail)[0]?.product?.product_img)[0]"
+                                            :src="apiUrl + JSON.parse((data?.order_detail)[0]?.product?.product_img)[0]"
                                             alt="" class=" rounded-circle
                                             avatar-sm" />
                                         </a>
@@ -110,7 +110,7 @@
                                         <span v-show="data.status == 'preparing'"
                                           class="badge rounded-pill text-info font-size-11 task-status">Đang chuẩn
                                           bị</span>
-                                        <span v-show="data.status == 'delivering'"
+                                        <span v-show="data.status == 'shipping'"
                                           class="badge rounded-pill orange font-size-11 task-status">Đang giao</span>
                                         <span v-show="data.status == 'delivered'"
                                           class="badge rounded-pill text-success font-size-11 task-status">Đã
@@ -193,7 +193,7 @@
                   <p v-show="listAddressUser == null">Bạn chưa thêm địa chỉ!</p>
                   <a href="#" class="list-group-item list-group-item-action d-flex gap-3 py-3" aria-current="true">
                     <div class="d-flex w-100 justify-content-between" data-bs-toggle="modal"
-                      data-bs-target="#exampleModal">
+                      data-bs-target="#addressModal">
                       <div>
                         <p class="mb-0 opacity-75">
                           <i class="fa-solid fa-plus border border-dark rounded-circle"></i>
@@ -211,11 +211,11 @@
         <!-- end card -->
 
         <!-- Start Model -->
-        <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal fade" id="addressModal" tabindex="-1" aria-labelledby="addressModalLabel" aria-hidden="true">
           <div class="modal-dialog">
             <div class="modal-content">
               <div class="modal-header">
-                <h1 class="modal-title fs-5 fw-bold" id="exampleModalLabel">
+                <h1 class="modal-title fs-5 fw-bold" id="addressModalLabel">
                   Thêm địa chỉ mới
                 </h1>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -324,6 +324,14 @@
               <li class="list-group-item list-group-item-action my-1 btn">
                 <i class="fa-solid fa-trash"></i> Xóa tài khoản
               </li>
+              <li v-show="!affiliateStatus == 'approved' || !affiliateStatus"
+                class="list-group-item list-group-item-action my-1 btn" @click="dialogAffiliateRegister = true">
+                <i class="fa-solid fa-user-ninja"></i> Đăng ký tiếp thị
+              </li>
+              <li v-show="affiliateStatus == 'approved'" @click="redirectToAffiliate"
+                class="list-group-item list-group-item-action my-1 btn">
+                <i class="fa-solid fa-shop"></i> Shop tiếp thị liên kết
+              </li>
             </ul>
             <!-- end ul -->
           </div>
@@ -361,7 +369,7 @@
                           {{ index + 1 }}
                         </th>
                         <td>
-                          <img :src="'https://dacsancamau.com/storage/' +
+                          <img :src="apiUrl +
                             JSON.parse(data.product.product_img)[0]
                             " alt="" width="40px" />
                         </td>
@@ -445,6 +453,76 @@
       </button>
     </div>
   </el-dialog>
+
+  <el-dialog v-model="dialogAffiliateRegister" title="ĐĂNG KÝ TIẾP THỊ" width="800">
+    <div class="mb-3 row">
+      <label for="name" class="col-sm-2 col-form-label">Họ và tên</label>
+      <div class="col-sm-10">
+        <input type="text" class="form-control" id="name" v-model="affiliateData.name"
+          :disabled="affiliateStatus == 'pending'" />
+      </div>
+      <span class="text-danger text-center">{{ affiliateNameError }}</span>
+    </div>
+
+    <div class="mb-3 row">
+      <label for="email" class="col-sm-2 col-form-label">Email</label>
+      <div class="col-sm-10">
+        <input type="email" class="form-control" id="email" v-model="affiliateData.email" disabled />
+      </div>
+      <!-- <span class="text-danger text-center">{{ emailError }}</span> -->
+    </div>
+
+    <div class="mb-3 row">
+      <label for="phoneNumber" class="col-sm-2 col-form-label">Số điện thoại</label>
+      <div class="col-sm-10">
+        <input type="text" class="form-control" id="phoneNumber" v-model="affiliateData.phone"
+          :disabled="affiliateStatus == 'pending'" />
+      </div>
+
+    </div>
+
+    <div class="mb-3 mt-0 row">
+      <span class="col-sm-2"></span>
+      <span class="col-sm-10 text-danger">{{ affiliatePhoneNumberError }}</span>
+    </div>
+
+    <!-- Điều khoản -->
+    <div class="mb-3">
+      <el-card shadow="hover">
+        <div class="terms-header">
+          <h4>Điều khoản chương trình tiếp thị liên kết</h4>
+        </div>
+        <el-scrollbar style="max-height: 180px;">
+          <p>1. Cung cấp thông tin chính xác khi đăng ký. Chúng tôi có quyền xét duyệt yêu cầu của bạn.</p>
+          <p>2. Chia sẻ link tiếp thị đúng cách, không vi phạm pháp luật, và không gây ảnh hưởng xấu đến thương hiệu.
+          </p>
+          <p>3. Hoa hồng sẽ được thanh toán dựa trên đơn hàng hợp lệ từ link tiếp thị của bạn.</p>
+          <p>4. Chúng tôi có quyền chấm dứt nếu bạn vi phạm quy định. Bạn có thể rút khỏi chương trình bất kỳ lúc nào.
+          </p>
+          <p>5. Chúng tôi có quyền cập nhật điều khoản. Tiếp tục tham gia đồng nghĩa với việc bạn đồng ý với thay đổi.
+          </p>
+        </el-scrollbar>
+      </el-card>
+    </div>
+
+    <div class="mb-3">
+      <div>
+        <el-checkbox v-model="isAgree" :disabled="affiliateStatus == 'pending'">Tôi đồng ý với điều khoản</el-checkbox>
+      </div>
+    </div>
+
+    <div class="mb-3 row">
+      <button v-show="affiliateStatus == ''" type="button" class="btn btn-success" @click="submitRequest">
+        Gửi yêu cầu xét duyệt
+      </button>
+      <button v-show="affiliateStatus == 'pending'" type="button" class="btn btn-danger" disabled>
+        Yêu cầu của bạn đang được xử lý
+      </button>
+    </div>
+  </el-dialog>
+
+
+
 </template>
 
 <script setup>
@@ -457,16 +535,36 @@ import { useFavoriteStore } from "../stores/favorite";
 import { useOrderStore } from "../stores/order";
 import addressData from "@/assets/address/dvhc.json";
 import { convertTime, formatCurrency } from '@/helpers/UtilHelper';
-import { showSuccess } from "../helpers/NotificationHelper";
+import { showSuccess, showWarning } from "../helpers/NotificationHelper";
 import { showLoading } from "../helpers/LoadingHelper";
 import orderService from "@/services/order.service";
+import affiliateService from "@/services/affiliate.service";
 import favoriteService from "@/services/favorite.service";
+import { useRouter } from "vue-router";
+import { initializeEcho } from "../pusher/echoConfig";
 
+const apiUrl = import.meta.env.VITE_APP_API_URL;
+
+const echoInstance = initializeEcho();
+
+
+echoInstance.channel('admin-channel')
+  .listen('.order.update.status', async (event) => {
+    orderStore.fetchListOrder();
+
+  });
+
+const router = useRouter();
 // Dialog var
+const dialogAffiliateRegister = ref(false);
 const dialogListFavorite = ref(false);
 const dialogUpdateProfile = ref(false);
 const dialogUpdatePassword = ref(false);
 // End
+
+const redirectToAffiliate = () => {
+  router.push({ name: "affiliate" });
+}
 
 // Schema validation Hanlde create Address
 const schema = Yup.object().shape({
@@ -480,6 +578,57 @@ const schema = Yup.object().shape({
   commue: Yup.string().required("Xã phường không được để trống"),
   address: Yup.string().required("Địa chỉ cụ thể không được để trống"),
 });
+
+const affiliateNameError = ref(null);
+const affiliatePhoneNumberError = ref(null);
+const isAgree = ref(false);
+const affiliateStatus = ref("");
+
+const affiliateSchema = Yup.object().shape({
+  name: Yup.string().required("Họ và tên không được để trống"),
+  phone: Yup.string()
+    .min(10, "Số điện thoại phải 10 ký tự")
+    .max(10, "Số điện thoại phải 10 ký tự")
+    .required("Số điện không được để trống"),
+
+});
+
+const submitRequest = () => {
+  if (!isAgree.value) {
+    showWarning("Vui lòng đồng ý với điều khoản")
+  } else {
+    affiliateSchema.validate(affiliateData.value, { abortEarly: false }).then(async () => {
+      const userUpdateResponse = await userService.updateNameAndPhone(affiliateData.value);
+      if (userUpdateResponse.status == "success") {
+        const response = await affiliateService.create();
+
+        if (response.status == "success") {
+          showSuccess("Yêu cầu của bạn đã được gửi đi");
+          dialogAffiliateRegister.value = false;
+        }
+      }
+    }).catch((errors) => {
+      errors.inner.forEach((error) => {
+        if (error.path == "name") {
+          affiliateNameError.value = error.message;
+        }
+        if (error.path == "phone") {
+          affiliatePhoneNumberError.value = error.message;
+        }
+      })
+    });
+  }
+}
+
+const hanleCheckStatusAffiliate = async () => {
+  try {
+    const response = await affiliateService.checkStatus();
+    affiliateStatus.value = response.data;
+    console.log("Affiliate Status: ", response);
+  } catch (error) {
+    console.log(error.response);
+  }
+}
 
 const favoriteStore = useFavoriteStore();
 const authStore = useAuthStore();
@@ -507,6 +656,12 @@ const addressInfoData = reactive({
   address: "",
 });
 
+const affiliateData = ref({
+  name: "",
+  email: "",
+  phone: "",
+});
+
 const cityAddress = ref(0);
 const districtAddress = ref(0);
 const commueAddress = ref(0);
@@ -519,6 +674,9 @@ const fetchUserData = async () => {
 
     const response = await userService.get(userId);
     userData.value = response.data;
+    affiliateData.value.name = response.data.name;
+    affiliateData.value.email = response.data.email;
+    affiliateData.value.phone = response.data.phone || "";
     nameUser.value = response.data.name;
     console.log(response.data.address);
     listAddressUser.value = JSON.parse(response.data.address);
@@ -613,10 +771,6 @@ const handleUpdateUser = async () => {
   }
 };
 
-
-
-
-
 const schemaPass = Yup.object().shape({
   oldPass: Yup.string()
     .matches(/[a-zA-Z]/, "Mật khẩu phải có ít nhất một chữ cái")
@@ -709,9 +863,9 @@ const handleCreateAddress = () => {
 
       const loading = showLoading();
       createAddress(addressInfoData).then(() => {
-        showSuccess("Thêm địa chỉ thành công.");
         setTimeout(() => {
           loading.close();
+          showSuccess("Thêm địa chỉ thành công.");
           fetchUserData();
         }, 1000);
       });
@@ -745,10 +899,12 @@ const handleCreateAddress = () => {
 
 const handleDeteleAddress = async (index) => {
   try {
-    const response = await userService.deleteAddress(index);
-    console.log("Delete: ", response);
-    showSuccess("Xóa địa chỉ thành công.");
-    fetchUserData();
+    const response = await userService.deleteAddress(index).then(() => {
+      showSuccess("Xóa địa chỉ thành công.");
+      fetchUserData();
+
+    })
+    // console.log("Delete: ", response);
   } catch (error) {
     console.log(error.response);
   }
@@ -772,6 +928,7 @@ const handleImageUpload = (event) => {
 
 
 onMounted(async () => {
+  hanleCheckStatusAffiliate();
   handleFetchCartCount();
   fetchUserData();
   await favoriteStore.fetchListFavorite();

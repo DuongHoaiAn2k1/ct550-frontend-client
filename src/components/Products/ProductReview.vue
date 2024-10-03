@@ -32,7 +32,7 @@
                                     <div>
                                         <a href="#">
                                             {{ data.user.name }}
-                                            <el-rate v-model="data.rating" allow-half />
+                                            <el-rate :model-value="data.rating" allow-half disabled />
                                         </a>
                                         <div class="mic-info">Thời gian: {{ convertTime(data.created_at) }}</div>
                                     </div>
@@ -50,14 +50,16 @@
             </div>
         </div>
         <div v-show="dataReviewByProductLength === 0">
-            <p class="text-center">Không có sản phẩm nào</p>
+            <p class="text-center">Không có đánh giá nào</p>
         </div>
     </div>
 </template>
 
 <script setup>
-import { formatCurrency, covertTime } from '@/helpers/UtilHelpers';
-
+import { computed, onMounted, ref, watch } from "vue";
+import reviewService from "@/services/review.service";
+import { showSuccess } from "@/helpers/NotificationHelper";
+import { convertTime } from "@/helpers/UtilHelper";
 // Define props
 const props = defineProps({
     isReviewProduct: {
@@ -68,44 +70,78 @@ const props = defineProps({
         type: Boolean,
         required: true
     },
-    rateComment: {
-        type: Number,
-        required: true
-    },
-    commentValue: {
-        type: String,
-        required: true
-    },
-    dataReviewByProductLength: {
-        type: Number,
-        required: true
-    },
-    listCommentPagination: {
-        type: Array,
-        required: true
-    },
-    currentPage: {
-        type: Number,
-        required: true
-    },
-    pageSize: {
+    productId: {
         type: Number,
         required: true
     }
 });
+const rateComment = ref();
+const commentValue = ref("");
+const listCommentReview = ref([]);
+const dataReviewByProductLength = ref(0);
+const currentPage = ref(1);
+const pageSize = 6;
+const fetchReviewByProduct = async () => {
+    try {
+        const response = await reviewService.getByProduct(props.productId);
+        listCommentReview.value = response.data;
+        dataReviewByProductLength.value = response.length;
+        console.log("Fetch review by product: ", response);
+    } catch (error) {
+        console.log(error.response);
+    }
+};
 
-// Define emits
-const emit = defineEmits(['handleComment', 'handleCurrentChange']);
+const listCommentPagination = computed(() => {
+    const startIndex = (currentPage.value - 1) * pageSize;
+    return listCommentReview.value?.slice(startIndex, startIndex + pageSize);
+});
 
+const handleComment = () => {
+    createComment(props.productId, rateComment.value, commentValue.value);
+    showSuccess("Cảm ơn bạn đã đánh giá");
+};
+
+const createComment = async (productId, rating, comment) => {
+    try {
+        const response = await reviewService.create({
+            product_id: productId,
+            rating: rating,
+            comment: comment,
+        });
+        fetchReviewByProduct();
+        checkUserReviewProduct();
+        console.log(response);
+        console.log("Create comment: ", productId, rating, comment);
+    } catch (error) {
+        console.log(error.response);
+    }
+};
+
+const checkUserReviewProduct = async () => {
+    try {
+        const response = await reviewService.userHasReviewedProduct(productId.value);
+        console.log("Check user review product: ", response);
+        isReviewProduct.value = response.data;
+    } catch (error) {
+        console.log(error.response);
+    }
+};
+
+
+onMounted(() => {
+    fetchReviewByProduct();
+});
+
+const handleCurrentChange = (val) => {
+    currentPage.value = val;
+    console.log(`current page: ${val}`);
+};
 </script>
 
 <style scoped>
-/* Include necessary styles here or move to a global stylesheet */
-.panel-body {
-    padding: 15px;
-}
-
-.comment-text {
-    margin-top: 10px;
+.mic-info {
+    color: #999;
+    font-size: 12px;
 }
 </style>

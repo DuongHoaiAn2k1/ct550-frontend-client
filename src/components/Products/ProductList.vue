@@ -3,7 +3,7 @@
         <el-scrollbar>
             <div class="scrollbar-flex-content">
                 <div v-for="product in listProductByCategory" :key="product.product_id" class="scrollbar-demo-item">
-                    <div class="card h-100 shadow-sm">
+                    <div class="card h-70 shadow-sm mb-3">
                         <router-link :to="{ name: 'product-detail', params: { id: product.product_id } }">
                             <img :src="'http://dacsancamau.com/storage/' + JSON.parse(product.product_img)[0]"
                                 class="card-img-top-2" alt="product.title" />
@@ -12,7 +12,7 @@
                             <h5 style="margin-bottom: 0px" class="card-title">
                                 <p class="name-product-2">{{ product.product_name }}</p>
                                 <p style="margin-bottom: 0px !important; font-weight: 600; font-size: 15px;"
-                                    class="mt-2 text-danger text-center">
+                                    class="text-danger text-center">
                                     {{ formatCurrency(product.product_price) }}/kg
                                 </p>
                             </h5>

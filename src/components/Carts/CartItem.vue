@@ -18,7 +18,7 @@
                             <i class="bx bxs-star-half text-warning"></i>
                         </p>
                         <p class="mb-0 mt-1">
-                            Giá : <span class="fw-medium">{{ promotionUser.includes(Cookies.get('role')) ?
+                            Giá : <span class="fw-medium">{{ promotionUser.includes(atob(Cookies.get('role'))) ?
                                 formatCurrency(product.product_price - product.product_promotion[0].discount_price) :
                                 formatCurrency(product.product_price) }}</span>
                         </p>
@@ -54,7 +54,7 @@
             <div class="col-md-2">
                 <div class="mt-1">
                     <p class="text-muted mb-3">Tổng</p>
-                    <h5>{{ promotionUser.includes(Cookies.get('role')) ?
+                    <h5>{{ promotionUser.includes(atob(Cookies.get('role'))) ?
                         formatCurrency((product.product_price - product.product_promotion[0].discount_price) *
                             cart.quantity) :
                         formatCurrency(product.product_price * cart.quantity) }}</h5>
@@ -78,12 +78,13 @@ import { onMounted, ref } from 'vue';
 import { formatCurrency } from '@/helpers/UtilHelper';
 import Cookies from 'js-cookie';
 import productService from '../../services/product.service';
+const atob = (str) => window.atob(str);
 const product = ref({});
 const productImg = ref("");
 const promotionUser = ref([]);
 const props = defineProps({
     cart: Object,
-    productId: Number,
+    productId: String,
 });
 
 const fetchProductDetail = async () => {

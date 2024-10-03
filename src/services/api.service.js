@@ -55,11 +55,7 @@ export default (baseURL) => {
       if(error.request &&
         error.response.status == 417 &&
         error.response.data.message == "Refresh token expired"){
-          Cookies.remove("accessTokenUser");
-          Cookies.remove("refreshTokenUser");
-          Cookies.remove("email");
-          Cookies.remove("user_id");
-          Cookies.remove("role");
+          Cookies.set("isUserLoggedIn", false);
           window.location.href = "https://client.dacsancamau.com:3001/login";
       }
       // if (

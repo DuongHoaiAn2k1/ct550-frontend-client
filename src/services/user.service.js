@@ -44,6 +44,10 @@ class UserService {
   async restorePointPaid(data) {
     return (await this.api.patch("/point/restore", data)).data;
   }
+
+  async updateNameAndPhone(data) {
+    return (await this.api.patch("/update/name-phone", data)).data;
+  }
 }
 
 export default new UserService();

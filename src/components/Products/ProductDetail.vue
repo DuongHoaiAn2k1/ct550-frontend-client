@@ -36,8 +36,8 @@
                     <span class="product_price">{{ formatCurrency(product.product_price) }}</span>
                 </div>
                 <p class="text-muted mb-0">
-                    <el-rate v-model="averageRating" disabled show-score text-color="#ff9900"
-                        score-template="{value} points" />
+                    <el-rate v-model="product.average_rating
+                        " disabled show-score text-color="#ff9900" score-template="{value} points" />
                 </p>
                 <div>
                     <span class="product_saved">Khối lượng:</span>
@@ -70,12 +70,12 @@
                         </div>
                     </div>
                     <div class="col-xs-6">
-                        <button @click="handleAddToCart(product.product_id)" type="button"
+                        <button @click="handleAddToCart(product.product_id, product.weight)" type="button"
                             class="btn btn-dark shop-button me-1">
                             Thêm vào giỏ hàng
                         </button>
-                        <button @click="handleBuyNow(product.product_id)" type="button" class="btn shop-button"
-                            style="background-color: #234A2B; color: white;">
+                        <button @click="handleBuyNow(product.product_id, product.weight)" type="button"
+                            class="btn shop-button" style="background-color: #234A2B; color: white;">
                             Mua ngay
                         </button>
                         <div class="product_fav" v-show="!product.liked" @click="createFavorite(product.product_id)">
@@ -125,12 +125,12 @@ const decrementQuantity = () => {
     emit('decrement-quantity');
 };
 
-const handleAddToCart = (product_id) => {
-    emit('add-to-cart', product_id);
+const handleAddToCart = (product_id, weight) => {
+    emit('add-to-cart', product_id, weight);
 };
 
-const handleBuyNow = (product_id) => {
-    emit('buy-now', product_id);
+const handleBuyNow = (product_id, weight) => {
+    emit('buy-now', product_id, weight);
 };
 
 const createFavorite = (product_id) => {

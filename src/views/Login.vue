@@ -112,6 +112,10 @@ const submitLogin = async (event) => {
           const refresh_token = response.refresh_token;
           const email = response.email;
           const user_id = response.user_id;
+          const affiliate_role = response.affiliate_role;
+          if (affiliate_role != null) {
+            Cookies.set("isAffiliateLogin", affiliate_role, { expires: 7 });
+          }
           authStore.login(access_token, refresh_token, email, user_id);
           // Cookies.set("token", token, { expires: 1 });
           localStorage.setItem("requireLogin", false);
@@ -163,10 +167,14 @@ const loginWithGoogle = () => {
 
   window.addEventListener('message', (event) => {
     if (event.origin === 'https://dacsancamau.com') {
-      const { access_token, refresh_token, user_id, email, role, google_id } = event.data;
+      const { access_token, refresh_token, user_id, email, role, google_id, affiliate_role } = event.data;
       newWindow.close();
       if (google_id != null) {
         Cookies.set("isGoogleLogin", true, { expires: 7 });
+      }
+
+      if (affiliate_role != null) {
+        Cookies.set("isAffiliateLogin", affiliate_role, { expires: 7 });
       }
       authStore.login(access_token, refresh_token, email, user_id, role);
       localStorage.setItem("requireLogin", false);

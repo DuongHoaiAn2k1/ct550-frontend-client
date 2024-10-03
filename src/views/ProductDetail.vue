@@ -16,10 +16,7 @@
           <div class="col-md-6"></div>
         </div>
         <ProductList :listProductByCategory="listProductByCategory" :formatCurrency="formatCurrency" />
-        <ProductReview :isReviewProduct="isReviewProduct" :isBuyingProduct="isBuyingProduct" :rateComment="rateComment"
-          :commentValue="commentValue" :dataReviewByProductLength="dataReviewByProductLength"
-          :listCommentPagination="listCommentPagination" :currentPage="currentPage" :pageSize="pageSize"
-          @handleComment="handleComment" @handleCurrentChange="handleCurrentChange" />
+        <ProductReview :isReviewProduct="isReviewProduct" :isBuyingProduct="isBuyingProduct" :productId="productId" />
       </div>
     </div>
   </div>
@@ -31,6 +28,7 @@ import Cookies from "js-cookie";
 import usePulseLoader from "../assets/js/PulseLoader.js";
 import ProductDetail from '@/components/Products/ProductDetail.vue';
 import ProductList from '@/components/Products/ProductList.vue';
+import ProductReview from '@/components/Products/ProductReview.vue';
 import LoadingSpinner from "@/components/Products/LoadingSpinner.vue";
 import productService from "@/services/product.service";
 import order_detailService from "@/services/order_detail.service";
@@ -58,21 +56,17 @@ const listProductByCategory = ref([]);
 const img_1 = ref("");
 const img_2 = ref("");
 const img_3 = ref("");
-const rateComment = ref();
 const quantity = ref(1);
-const commentValue = ref("");
-const isReviewProduct = ref(true);
-const isBuyingProduct = ref(false);
-const listCommentReview = ref([]);
-const currentPage = ref(1);
-const pageSize = 6;
-const averageRating = ref(0);
 
+const isReviewProduct = ref(false);
+const isBuyingProduct = ref(false);
+const averageRating = ref(0);
 const categoryId = ref(0);
 
 const increaseProductViews = async () => {
   try {
     const response = await productService.increaseView(productId.value);
+
   } catch (error) {
     console.log(error.response);
   }
@@ -87,19 +81,7 @@ const fetchProduct = async () => {
     img_1.value = JSON.parse(product.value.product_img)[0];
     img_2.value = JSON.parse(product.value.product_img)[1];
     img_3.value = JSON.parse(product.value.product_img)[2];
-    console.log("Product detail: ", img_1);
-  } catch (error) {
-    console.log(error.response);
-  }
-};
-
-const dataReviewByProductLength = ref(0);
-const fetchReviewByProduct = async () => {
-  try {
-    const response = await reviewService.getByProduct(productId.value);
-    listCommentReview.value = response.data;
-    averageRating.value = response.average_rating;
-    dataReviewByProductLength.value = response.length;
+    console.log("Product detail: ", response);
   } catch (error) {
     console.log(error.response);
   }
@@ -110,6 +92,16 @@ const fetchProductByCategoryId = async () => {
     const response = await productService.getProductFromCategoryId(categoryId.value);
     listProductByCategory.value = response.data;
     console.log(listProductByCategory);
+  } catch (error) {
+    console.log(error.response);
+  }
+};
+
+const fetchReviewByProduct = async () => {
+  try {
+    const response = await reviewService.getByProduct(props.productId);
+    averageRating.value = response.average_rating;
+
   } catch (error) {
     console.log(error.response);
   }
@@ -126,7 +118,7 @@ const checkUserReviewProduct = async () => {
 };
 
 onMounted(async () => {
-  if(Cookies.get("isUserLoggedIn") == "true"){
+  if (Cookies.get("isUserLoggedIn") == "true") {
     cartStore.fetchCartCount();
   }
   fetchProduct().finally(() => {
@@ -137,40 +129,45 @@ onMounted(async () => {
 
       loading.value = false;
     }, 500);
-    if(Cookies.get("isUserLoggedIn") == "true"){
+    if (Cookies.get("isUserLoggedIn") == "true") {
       checkUserReviewProduct();
     }
   });
-  if(Cookies.get("isUserLoggedIn") == "true"){
+  if (Cookies.get("isUserLoggedIn") == "true") {
     await favoriteStore.fetchListFavorite().finally(() => {
-    updateDetailProductWithLikes();
+      updateDetailProductWithLikes();
     })
     increaseProductViews();
-    fetchReviewByProduct();
     checkBuyingProduct();
   }
-  
 
-  
+  if (route.query && route.query.ref) {
+    Cookies.set('affiliateUserId', route.query.ref);
+    Cookies.set('productAffiliateId', productId.value);
+  }
+
+  fetchReviewByProduct();
+
 });
 
-const handleAddToCart = (product_id) => {
-  addToCart(product_id);
+const handleAddToCart = (product_id, weight) => {
+  addToCart(product_id, weight);
   showSuccess("Thêm vào giỏ hàng thành công");
 };
 
-const handleBuyNow = (product_id) => {
-  addToCart(product_id);
+const handleBuyNow = (product_id, weight) => {
+  addToCart(product_id, weight);
   router.push({ name: "cart" });
 };
 
-const addToCart = async (product_id) => {
+const addToCart = async (product_id, weight) => {
   try {
     const user_id = authStore.user_id;
     const response = await cartService.create({
       user_id: user_id,
       product_id: product_id,
       quantity: quantity.value,
+      total_weight: weight,
     });
     await cartStore.fetchCartCount();
   } catch (error) {
@@ -197,8 +194,6 @@ const createFavorite = async (productId) => {
     await favoriteStore.createFavorite(productId);
     await favoriteStore.fetchListFavorite().finally
     showSuccessMessage("Thêm vào danh sách yêu thích thành công");
-    rateComment.value = 0;
-    commentValue.value = 0;
     setTimeout(() => {
       updateDetailProductWithLikes();
     }, 500);
@@ -222,44 +217,14 @@ const checkBuyingProduct = async () => {
   }
 };
 
-const handleComment = () => {
-  createComment(productId.value, rateComment.value, commentValue.value);
-  showSuccess("Cảm ơn bạn đã đánh giá");
-  fetchReviewByProduct();
-  checkUserReviewProduct();
-};
-
-const listCommentPagination = computed(() => {
-  const startIndex = (currentPage.value - 1) * pageSize;
-  return listCommentReview.value?.slice(startIndex, startIndex + pageSize);
-});
-
-// const handleCurrentChange = (val) => {
-//   currentPage.value = val;
-//   console.log(`current page: ${val}`);
-// });
-
 watch(productId, () => {
   fetchProduct();
   fetchProductByCategoryId();
   increaseProductViews();
-  fetchReviewByProduct();
   checkUserReviewProduct();
   checkBuyingProduct();
 });
 
-const createComment = async (productId, rating, comment) => {
-  try {
-    const response = await reviewService.create({
-      product_id: productId,
-      rating: rating,
-      comment: comment,
-    });
-    console.log(response);
-  } catch (error) {
-    console.log(error.response);
-  }
-};
 const incrementQuantity = () => {
   if (quantity.value < 10) {
     quantity.value++;

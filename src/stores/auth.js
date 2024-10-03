@@ -33,6 +33,7 @@ export const useAuthStore = defineStore("userLogin", {
       this.user_id = null;
       Cookies.set("isUserLoggedIn", false, {expires: 7});
       Cookies.set("isGoogleLogin", false, { expires: 7 });
+      Cookies.set("isAffiliateLogin", "", { expires: 7 });
       Cookies.remove("accessTokenUser");
       Cookies.remove("refreshTokenUser");
       Cookies.remove("email");

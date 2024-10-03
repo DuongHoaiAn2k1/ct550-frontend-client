@@ -55,7 +55,7 @@
 
 
 <script setup>
-import { onMounted, ref, computed } from "vue";
+import { onMounted, ref, computed, watch } from "vue";
 import { useAuthStore } from "@/stores/auth";
 import { initializeEcho } from "../../pusher/echoConfig";
 import messageService from "@/services/message.service";
@@ -64,53 +64,93 @@ const authStore = useAuthStore();
 const echoInstance = initializeEcho();
 const messageSend = ref("");
 const userId = computed(() => authStore.user_id);
+const countUnRead = ref(0);
+const props = defineProps({
+    isChatVisible: Boolean,
+});
+
+const emit = defineEmits(['toggleChat']);
+
 
 echoInstance.channel(`chat.${userId.value}`).listen('.message.sent', async (event) => {
     // const response = await notificationStore.getAll();
-    handleFetchMessageUser();
+    if (props.isChatVisible) {
+        handleFetchMessageUser();
+    }
+    handleCountUnRead().then(() => {
+        emit('value-changed', countUnRead.value);
+    });
 });
+
+const handleCountUnRead = async () => {
+    try {
+        const response = await messageService.countUnRead();
+        countUnRead.value = response.count;
+        console.log("Message count: ", response);
+    } catch (error) {
+        console.log(error);
+    }
+}
 const handleCreateMessage = async () => {
     try {
         const response = await messageService.create({
             message: messageSend.value,
             sender_id: authStore.user_id
         });
-
         messageSend.value = "";
-
-
-        console.log(response);
-
         handleFetchMessageUser();
+        handleCountUnRead().then(() => {
+            emit('value-changed', countUnRead.value);
+        });
     } catch (error) {
         console.log(error);
     }
 }
 const handleFetchMessageUser = async () => {
     try {
-        const response = await messageService.get(authStore.user_id);
+        const response = await messageService.get();
         messages.value = response.data;
         console.log("Message: ", response);
+        handleCountUnRead().then(() => {
+            emit('value-changed', countUnRead.value);
+        });
     } catch (error) {
         console.log(error.response);
     }
 }
 
-const emit = defineEmits(['toggleChat']);
 
 const closeChat = () => {
-
     emit('toggleChat');
+    props.isChatVisible = false;
 }
 
+watch(
+    () => props.isChatVisible,
+    (newValue) => {
+        if (newValue) {
+            handleFetchMessageUser();
+            handleCountUnRead().then(() => {
+                emit('value-changed', countUnRead.value);
+            });
+        }
+    }
+);
 
 onMounted(() => {
-    handleFetchMessageUser();
+    if (props.isChatVisible) {
+        handleFetchMessageUser();
+    }
+
 })
 </script>
 
 
 <style scoped>
+.card {
+    width: 380px;
+}
+
 .card-notification {
     display: flex;
     justify-content: center;
@@ -121,21 +161,16 @@ onMounted(() => {
 .card-body {
     display: flex;
     flex-direction: column-reverse;
-    /* Đảo chiều hiển thị tin nhắn */
     height: 400px;
-    /* Tạo chiều cao cố định */
     overflow-y: scroll;
-    /* Hiển thị thanh cuộn khi có quá nhiều tin nhắn */
 }
 
 .card-body::-webkit-scrollbar {
     width: 6px;
-    /* Tạo kích thước thanh cuộn */
 }
 
 .card-body::-webkit-scrollbar-thumb {
     background-color: #aaa;
-    /* Màu thanh cuộn */
     border-radius: 10px;
 }
 
@@ -147,20 +182,159 @@ textarea.form-control {
     width: 100%;
     height: auto;
     resize: none;
-    /* Ngăn kéo kích thước nếu không muốn */
     border: 1px solid #ced4da;
 }
 
 .chatbox-form {
     position: fixed;
     z-index: 9999;
-    /* top: 0; */
-    /* left: 60%; */
-    right: -56%;
-    bottom: 32%;
-    width: 100%;
+    top: 58%;
+    right: 8%;
+    transform: translate(0, -50%);
+    width: 400px;
     height: 60%;
 }
+
+/* Màn hình cực nhỏ (điện thoại nhỏ) */
+@media only screen and (max-width: 320px) {
+    .card {
+        width: 280px;
+    }
+
+    .chatbox-form {
+        top: 30%;
+        right: 5%;
+        width: 90%;
+        height: 60%;
+    }
+}
+
+/* Màn hình nhỏ (điện thoại thông thường) */
+@media only screen and (min-width: 321px) and (max-width: 375px) {
+    .card {
+        width: 300px;
+    }
+
+    .chatbox-form {
+        top: 28%;
+        right: 18%;
+        width: 85%;
+        height: 60%;
+    }
+}
+
+/* Màn hình điện thoại trung bình */
+@media only screen and (min-width: 376px) and (max-width: 414px) {
+    .card {
+        width: 320px;
+    }
+
+    .chatbox-form {
+        top: 50%;
+        right: 21%;
+        width: 80%;
+        height: 60%;
+    }
+}
+
+/* Màn hình điện thoại lớn */
+@media only screen and (min-width: 415px) and (max-width: 767px) {
+    .card {
+        width: 350px;
+    }
+
+    .chatbox-form {
+        top: 56%;
+        right: 14%;
+        width: 400px;
+        height: 60%;
+    }
+}
+
+/* Máy tính bảng nhỏ */
+@media only screen and (min-width: 768px) and (max-width: 834px) {
+    .card {
+        width: 350px;
+    }
+
+    .chatbox-form {
+        top: 58%;
+        right: 10%;
+        width: 450px;
+        height: 65%;
+    }
+}
+
+/* Máy tính bảng lớn */
+@media only screen and (min-width: 835px) and (max-width: 1023px) {
+    .card {
+        width: 380px;
+    }
+
+    .chatbox-form {
+        top: 40%;
+        right: 14%;
+        width: 480px;
+        height: 65%;
+    }
+}
+
+/* Màn hình desktop nhỏ */
+@media only screen and (min-width: 1024px) and (max-width: 1279px) {
+    .card {
+        width: 400px;
+    }
+
+    .chatbox-form {
+        top: 80%;
+        right: 10%;
+        width: 450px;
+        height: 70%;
+    }
+}
+
+/* Màn hình desktop trung bình */
+@media only screen and (min-width: 1280px) and (max-width: 1439px) {
+    .card {
+        width: 450px;
+    }
+
+    .chatbox-form {
+        top: 50%;
+        right: 8%;
+        width: 500px;
+        height: 75%;
+    }
+}
+
+/* Màn hình desktop lớn */
+@media only screen and (min-width: 1440px) and (max-width: 1919px) {
+    .card {
+        width: 400px;
+    }
+
+    .chatbox-form {
+        top: 60%;
+        right: 8%;
+        width: 480px;
+        height: 80%;
+    }
+}
+
+/* Màn hình cực lớn */
+@media only screen and (min-width: 1920px) {
+    .card {
+        width: 400px;
+    }
+
+    .chatbox-form {
+        top: 76%;
+        right: 8%;
+        width: 600px;
+        height: 85%;
+    }
+}
+
 
 
 #chat1 .form-outline .form-control~.form-notch div {

@@ -18,10 +18,10 @@
 
         <div class="content">
             <div class="brand">{{ productName }}</div>
-            <div v-show="product.product_promotion.length != 0 && JSON.parse(product.product_promotion[0].promotion.user_group).includes(Cookies.get('role'))"
+            <div v-show="product.product_promotion.length != 0 && JSON.parse(product.product_promotion[0].promotion.user_group).includes(atob(Cookies.get('role')))"
                 class="product-name">
                 <span class="original-price">{{ formatCurrency(product.product_price) }}</span>
-                <span class="discount">-18%</span>
+                <span class="discount">-{{ product?.product_promotion[0]?.promotion?.discount_percentage }}%</span>
             </div>
             <div v-show="product.product_promotion.length == 0" class="product-name">
                 <span style="color: white;">0</span>
@@ -68,6 +68,7 @@
 import { addToCart } from '../../helpers/CartHelper';
 import { formatCurrency } from '../../helpers/UtilHelper';
 import Cookies from 'js-cookie';
+const atob = (str) => window.atob(str);
 
 const emit = defineEmits(['handleCreateProductLike']);
 

@@ -10,7 +10,7 @@
                 <span style="color: #a8729a">{{ address.name }}</span>!
               </h5>
               <el-steps v-show="order.status != 'cancelled'"
-                :active="(order.status == 'preparing') ? 1 : order.status == 'delivering' ? 2 : 3" align-center>
+                :active="(order.status == 'preparing') ? 1 : order.status == 'shipping' ? 2 : 3" align-center>
                 <el-step title="Đang chuẩn bị" />
                 <el-step title="Đang giao" />
                 <el-step title="Đã nhận" />
@@ -187,7 +187,7 @@
                 TỔNG PHẢI THANH TOÁN:
                 <span class="h2 mb-0 ms-2">{{
                   formatCurrency(order.total_cost)
-                  }}</span>
+                }}</span>
               </h5>
             </div>
           </div>
@@ -205,6 +205,14 @@ import { ElLoading, ElNotification, ElMessage } from "element-plus";
 import userService from "@/services/user.service";
 import order_detailService from "../services/order_detail.service";
 import refundService from "../services/refund.service";
+import { initializeEcho } from "../pusher/echoConfig";
+
+const echoInstance = initializeEcho();
+echoInstance.channel('admin-channel')
+  .listen('.order.update.status', async (event) => {
+    fetchOrder();
+
+  });
 const centerDialogVisible1 = ref(false);
 const centerDialogVisible2 = ref(false);
 const order = ref([]);

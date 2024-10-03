@@ -75,10 +75,10 @@ body {
   /* Làm cho nền cố định khi cuộn */
 }
 
-.content-container {
+/* .content-container {
   padding: 20px;
   min-height: calc(100vh - var(--header-height) - var(--footer-height));
-}
+} */
 
 #app {
   font-family: Roboto, Helvetica, Arial, sans-serif;

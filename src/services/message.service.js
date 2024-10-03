@@ -5,8 +5,12 @@ class MessageService {
         this.api = createApiClient(baseUrl);
     }
 
-   async get(id) {
-        return (await this.api.get(`/${id}`)).data; 
+    async get() {
+        return (await this.api.get('user/message')).data; 
+    }
+
+    async countUnRead () {
+        return (await this.api.get('/count/unread')).data;
     }
 
     async getAll() {
