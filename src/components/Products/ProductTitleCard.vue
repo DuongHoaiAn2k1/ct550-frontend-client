@@ -4,8 +4,8 @@
         <div class="row">
             <ProductCard v-for="product in product" :key="product.product_id" :price="product.product_price"
                 :productName="product.product_name" :productId="product.product_id" :product="product"
-                :image="'https://dacsancamau.com/storage/' + JSON.parse(product.product_img)[0]"
-                :liked.sync="product.liked" @handleCreateProductLike="handleCreateProductLike" />
+                :image="apiUrl + JSON.parse(product.product_img)[0]" :liked.sync="product.liked"
+                @handleCreateProductLike="handleCreateProductLike" />
         </div>
 
     </div>
@@ -15,7 +15,7 @@
 import ProductCard from './ProductCard.vue';
 
 const emit = defineEmits(['handleCreateProductLike']);
-
+const apiUrl = import.meta.env.VITE_APP_API_URL;
 
 const props = defineProps({
     title: {

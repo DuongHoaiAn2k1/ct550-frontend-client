@@ -61,7 +61,7 @@
                         name: 'product-detail',
                         params: { id: data.product.product_id },
                       }">
-                        <img :src="'https://dacsancamau.com/storage/' +
+                        <img :src="apiUrl +
                           JSON.parse(data.product.product_img)[0]
                           " class="img-fluid" alt="Phone" />
                       </router-link>
@@ -206,7 +206,7 @@ import userService from "@/services/user.service";
 import order_detailService from "../services/order_detail.service";
 import refundService from "../services/refund.service";
 import { initializeEcho } from "../pusher/echoConfig";
-
+const apiUrl = import.meta.env.VITE_APP_API_URL;
 const echoInstance = initializeEcho();
 echoInstance.channel('admin-channel')
   .listen('.order.update.status', async (event) => {

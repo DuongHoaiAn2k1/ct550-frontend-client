@@ -2,8 +2,8 @@
   <div class="container">
     <div class="row text-center">
       <Category v-for="category in categoryStore.listCategory" :title="category.category_name"
-        :categoryId="category.category_id" :key="category.category_id"
-        :image="'https://dacsancamau.com/storage/' + category.image" AcctionDetail="Xem thêm" />
+        :categoryId="category.category_id" :key="category.category_id" :image="apiUrl + category.image"
+        AcctionDetail="Xem thêm" />
     </div>
   </div>
 
@@ -15,9 +15,8 @@
       <div class="col hp" v-for="product in listProduct[categoryID]" :key="product.product_id">
         <div class="card h-100 shadow-sm">
           <ProductCard :productId="product.product_id" :productName="product.product_name"
-            :price="product.product_price"
-            :image="'https://dacsancamau.com/storage/' + JSON.parse(product.product_img)[0]" :liked.sync="product.liked"
-            @handleCreateProductLike="handleCreateProductLike" />
+            :price="product.product_price" :image="apiUrl + JSON.parse(product.product_img)[0]"
+            :liked.sync="product.liked" @handleCreateProductLike="handleCreateProductLike" />
           <p v-show="product.product_quantity == 0" class="out-of-stock">
             Hết Hàng
           </p>
@@ -41,16 +40,14 @@ import { computed, onMounted, watch, ref, watchEffect } from "vue";
 import favoriteService from "@/services/favorite.service";
 import productService from "@/services/product.service";
 import { useAuthStore } from "@/stores/auth";
-import cartService from "@/services/cart.service";
 import { useRoute } from "vue-router";
-import categoryService from "@/services/category.service";
 import { useSearchStore } from "@/stores/search";
 import { useCartStore } from "@/stores/cart";
 import { useCategoryStore } from "../stores/category";
 import { useProductStore } from "../stores/product";
 import { useFavoriteStore } from "../stores/favorite";
 import { showWarning, showSuccess, showSuccessMessage } from "../helpers/NotificationHelper";
-
+const apiUrl = import.meta.env.VITE_APP_API_URL;
 
 var categoryName = "";
 

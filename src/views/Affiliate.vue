@@ -55,8 +55,7 @@
                                 <th scope="row" class="text-center">{{ index + 1 }}</th>
                                 <td class="text-center">{{ item.product.product_name }}
                                 </td>
-                                <td class="text-center"><img
-                                        :src="'https://dacsancamau.com/storage/' + JSON.parse(item.product.product_img)[0]"
+                                <td class="text-center"><img :src="apiUrl + JSON.parse(item.product.product_img)[0]"
                                         alt="" width="50px">
                                 </td>
                                 <td class="text-center">
@@ -179,7 +178,7 @@ const currentPage = ref(1);
 const pageSize = 10;
 const listCommission = ref([]);
 const balance = ref(0);
-
+const apiUrl = import.meta.env.VITE_APP_API_URL;
 
 const withDrawalSchema = Yup.object().shape({
     amount: Yup.number().required('Số tiền rút không được để trống').min(1000, 'Số tiền rút tối thiểu 1000 VNĐ'),
