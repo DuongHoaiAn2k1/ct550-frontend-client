@@ -1,5 +1,5 @@
 <template>
-    <div class="container">
+    <div class="container mt-1">
       <div class="row">
         <h3 class="font-weight-600 mb-2">Hướng dẫn mua hàng</h3>
       </div>

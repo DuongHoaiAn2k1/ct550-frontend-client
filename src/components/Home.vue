@@ -22,6 +22,11 @@
       @handleCreateProductLike="handleCreateProductLike" />
   </div>
 
+  <div class="container">
+    <ProductTitleCard title="Tôm Khô Cà Mau" :product="productStore.shrimpList"
+      @handleCreateProductLike="handleCreateProductLike" />
+  </div>
+
   <div v-show="listProductByName.length != 0" class="container bg-trasparent mt-2" style="position: relative">
     <p style="margin-bottom: 0px; font-weight: 600">KẾT QUẢ TÌM KIẾM</p>
     <div v-show="!loading" class="row row-cols-1 row-cols-xs-2 row-cols-sm-2 row-cols-lg-5 g-3">
@@ -123,10 +128,8 @@ const deleteFavorite = async (productId) => {
   try {
     const response = await favoriteService.delete(productId);
     showSuccess("Đã loại bỏ khỏi danh sách yêu thích");
-    setTimeout(() => {
-      updateFishListWithLikes();
-      updateShrimpListWithLikes();
-    }, 1000);
+    await productStore.fetchListFish();
+    await productStore.fetchListShrimp()
   } catch (error) {
     console.log(error.response);
   }
@@ -136,50 +139,21 @@ const createFavorite = async (productId) => {
   try {
     const response = await favoriteService.create({ product_id: productId });
     showSuccess("Thêm vào danh sách yêu thích thành công");
-    setTimeout(() => {
-      updateFishListWithLikes();
-      updateShrimpListWithLikes();
-    }, 1000);
+    await productStore.fetchListFish();
+    await productStore.fetchListShrimp()
   } catch (error) {
     console.log(error.response);
   }
 };
-const updateFishListWithLikes = () => {
-  productStore.fishList.forEach((product) => {
-    const isLiked = favoriteStore.listFavorite.some(
-      (favorite) => favorite.product_id == product.product_id
-    );
-    product.liked = isLiked;
-  });
-};
 
-const updateShrimpListWithLikes = () => {
-  productStore.shrimpList.forEach((product) => {
-    const isLiked = favoriteStore.listFavorite.some(
-      (favorite) => favorite.product_id == product.product_id
-    );
-    product.liked = isLiked;
-  });
-};
-
-const handleCreateProductLike = async (productId, liked) => {
+const handleCreateProductLike = async (productId) => {
   try {
-    if (!liked) {
-      await favoriteStore.createFavorite(productId);
+    const response = await favoriteStore.createFavorite(productId);
+    if (response.status === 'created') {
       showSuccessMessage("Đã thêm vào mục yêu thích");
-      await favoriteStore.fetchListFavorite().finally(() => {
-        updateFishListWithLikes();
-        updateShrimpListWithLikes();
-      })
     } else {
-      await favoriteStore.deleteFavorite(productId);
       showSuccessMessage("Đã xóa khỏi mục yêu thích");
-      await favoriteStore.fetchListFavorite().finally(() => {
-        updateFishListWithLikes();
-        updateShrimpListWithLikes();
-      })
     }
-
   } catch (error) {
     console.log(error.response);
   }
@@ -210,12 +184,12 @@ onMounted(async () => {
     await cartStore.fetchCartCount();
 
   }
-  setTimeout(() => {
-    updateFishListWithLikes();
-    updateShrimpListWithLikes();
-    loading.value = false;
-    // console.log("List fish after update likes: ", productStore.fishList);
-  }, 3000);
+  // setTimeout(() => {
+  //   // updateFishListWithLikes();
+  //   // updateShrimpListWithLikes();
+  //   loading.value = false;
+  //   // console.log("List fish after update likes: ", productStore.fishList);
+  // }, 3000);
 
 });
 const addToCart = async (product_id, weight) => {

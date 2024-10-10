@@ -50,6 +50,10 @@ class ProductService {
   async increaseProductQuantity(data) {
     return (await this.api.post("/increase/product/quantity", data)).data;
   }
+
+  async getProductByCategoryId(id) {
+    return (await this.api.get(`/category/${id}`)).data;
+  }
 }
 
 export default new ProductService();

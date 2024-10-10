@@ -5,7 +5,7 @@
         <ProductDetail :product="product" :productDetail="productDetail" :averageRating="averageRating" :img_1="img_1"
           :img_2="img_2" :img_3="img_3" :quantity="quantity" :loading="loading" @increment-quantity="incrementQuantity"
           @decrement-quantity="decrementQuantity" @add-to-cart="handleAddToCart" @buy-now="handleBuyNow"
-          @create-favorite="createFavorite" @delete-favorite="deleteFavorite" />
+          @create-favorite="createFavorite" :inStock="inStock" />
 
         <LoadingSpinner :loading="loading" :spinnerStyle="spinnerStyle" :spinnerDelay1="spinnerDelay1"
           :spinnerDelay2="spinnerDelay2" :spinnerDelay3="spinnerDelay3" />
@@ -32,6 +32,7 @@ import ProductReview from '@/components/Products/ProductReview.vue';
 import LoadingSpinner from "@/components/Products/LoadingSpinner.vue";
 import productService from "@/services/product.service";
 import order_detailService from "@/services/order_detail.service";
+import batchService from '@/services/batch.service';
 import { computed, onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
@@ -52,6 +53,7 @@ const router = useRouter();
 const productId = computed(() => route.params.id);
 const productDetail = ref([]);
 const listProductByCategory = ref([]);
+const inStock = ref(false);
 
 const img_1 = ref("");
 const img_2 = ref("");
@@ -62,6 +64,16 @@ const isReviewProduct = ref(false);
 const isBuyingProduct = ref(false);
 const averageRating = ref(0);
 const categoryId = ref(0);
+
+const checkInStock = async () => {
+  try {
+    const response = await batchService.checkProductInStock(productId.value);
+    inStock.value = response.data;
+    console.log('Check In Stock: ', response);
+  } catch (error) {
+    console.log(error.response);
+  }
+}
 
 const increaseProductViews = async () => {
   try {
@@ -75,8 +87,8 @@ const increaseProductViews = async () => {
 const fetchProduct = async () => {
   try {
     const response = await productService.get(productId.value);
-    product.value = response.data;
-    categoryId.value = response.data.category_id;
+    product.value = response.data[0];
+    categoryId.value = response.data[0].category_id;
     console.log("category id: ", categoryId.value);
     img_1.value = JSON.parse(product.value.product_img)[0];
     img_2.value = JSON.parse(product.value.product_img)[1];
@@ -135,7 +147,7 @@ onMounted(async () => {
   });
   if (Cookies.get("isUserLoggedIn") == "true") {
     await favoriteStore.fetchListFavorite().finally(() => {
-      updateDetailProductWithLikes();
+
     })
     increaseProductViews();
     checkBuyingProduct();
@@ -147,6 +159,7 @@ onMounted(async () => {
   }
 
   fetchReviewByProduct();
+  checkInStock();
 
 });
 
@@ -175,36 +188,20 @@ const addToCart = async (product_id, weight) => {
   }
 };
 
-const deleteFavorite = async (productId) => {
-  // console.log(productId);
-  try {
-    await favoriteStore.deleteFavorite(productId);
-    await favoriteStore.fetchListFavorite().finally(() => {
-      updateDetailProductWithLikes();
-    })
-    showSuccessMessage("Đã loại bỏ khỏi danh sách yêu thích");
-
-  } catch (error) {
-    console.log(error.response);
-  }
-};
 
 const createFavorite = async (productId) => {
   try {
-    await favoriteStore.createFavorite(productId);
-    await favoriteStore.fetchListFavorite().finally
-    showSuccessMessage("Thêm vào danh sách yêu thích thành công");
-    setTimeout(() => {
-      updateDetailProductWithLikes();
-    }, 500);
+    const response = await favoriteStore.createFavorite(productId);
+    if (response.status === 'created') {
+      showSuccessMessage("Đã thêm vào mục yêu thích");
+      fetchProduct();
+    } else {
+      showSuccessMessage("Đã xóa khỏi mục yêu thích");
+      fetchProduct();
+    }
   } catch (error) {
     console.log(error.response);
   }
-};
-
-const updateDetailProductWithLikes = () => {
-  const isLiked = favoriteStore.listFavorite.some((favorite) => favorite.product_id == productId.value);
-  product.value.liked = isLiked;
 };
 
 

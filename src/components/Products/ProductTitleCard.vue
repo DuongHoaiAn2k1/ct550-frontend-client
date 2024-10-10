@@ -28,8 +28,8 @@ const props = defineProps({
     }
 });
 
-const handleCreateProductLike = (productId, liked) => {
-    emit('handleCreateProductLike', productId, liked);
+const handleCreateProductLike = (productId) => {
+    emit('handleCreateProductLike', productId);
 }
 
 

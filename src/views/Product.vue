@@ -1,5 +1,5 @@
 <template>
-  <div class="container">
+  <div class="container mt-1">
     <div class="row text-center">
       <Category v-for="category in categoryStore.listCategory" :title="category.category_name"
         :categoryId="category.category_id" :key="category.category_id" :image="apiUrl + category.image"
@@ -7,21 +7,21 @@
     </div>
   </div>
 
-  <div class="container bg-trasparent mt-2" style="position: relative">
+  <div class="container mt-2">
     <p class="text-center" style="margin-bottom: 0px; font-weight: 600; font-size: 24px">
       {{ categoryName }}
     </p>
-    <div v-show="!loading" class="row row-cols-1 row-cols-xs-2 row-cols-sm-2 row-cols-lg-5 g-3">
-      <div class="col hp" v-for="product in listProduct[categoryID]" :key="product.product_id">
-        <div class="card h-100 shadow-sm">
-          <ProductCard :productId="product.product_id" :productName="product.product_name"
-            :price="product.product_price" :image="apiUrl + JSON.parse(product.product_img)[0]"
-            :liked.sync="product.liked" @handleCreateProductLike="handleCreateProductLike" />
-          <p v-show="product.product_quantity == 0" class="out-of-stock">
-            Hết Hàng
-          </p>
-
+    <div v-show="!loading">
+      <div class="product-title-card">
+        <div class="row">
+          <ProductCard v-for="product in listProduct" :key="product.product_id" :price="product.product_price"
+            :productName="product.product_name" :productId="product.product_id" :product="product"
+            :image="apiUrl + JSON.parse(product.product_img)[0]" :liked.sync="product.liked"
+            @handleCreateProductLike="handleCreateProductLike" />
         </div>
+        <!-- <p v-show="product.product_quantity == 0" class="out-of-stock">
+            Hết Hàng
+          </p> -->
       </div>
     </div>
     <div class="text-center my-5">
@@ -32,99 +32,34 @@
 </template>
 
 <script setup>
-import "../assets/card.css";
-import LoadingSpinner from "@/components/Products/LoadingSpinner.vue";
-import ProductCard from "@/components/Products/ProductCard.vue";
+import "../assets/css/PulseLoader.css";
+import { computed, onMounted, ref, watch } from "vue";
+import usePulseLoader from "../assets/js/PulseLoader.js";
 import Category from "../components/Categories/Category.vue";
-import { computed, onMounted, watch, ref, watchEffect } from "vue";
-import favoriteService from "@/services/favorite.service";
-import productService from "@/services/product.service";
-import { useAuthStore } from "@/stores/auth";
+import ProductCard from "../components/Products/ProductCard.vue";
+import LoadingSpinner from "@/components/Products/LoadingSpinner.vue";
+import { useCategoryStore } from "@/stores/category";
 import { useRoute } from "vue-router";
-import { useSearchStore } from "@/stores/search";
-import { useCartStore } from "@/stores/cart";
-import { useCategoryStore } from "../stores/category";
-import { useProductStore } from "../stores/product";
-import { useFavoriteStore } from "../stores/favorite";
-import { showWarning, showSuccess, showSuccessMessage } from "../helpers/NotificationHelper";
-const apiUrl = import.meta.env.VITE_APP_API_URL;
+import productService from "../services/product.service";
+import { useFavoriteStore } from "@/stores/favorite";
+import { showSuccess, showWarning, showSuccessMessage } from "@/helpers/NotificationHelper";
+const { loading, spinnerStyle, spinnerDelay1, spinnerDelay2, spinnerDelay3 } = usePulseLoader();
 
-var categoryName = "";
-
-
-const categoryStore = useCategoryStore();
-const productStore = useProductStore();
-const favoriteStore = useFavoriteStore();
-const authStore = useAuthStore();
-const cartStore = useCartStore();
 const route = useRoute();
-const searchStore = useSearchStore();
 const categoryID = computed(() => route.params.id);
+const categoryStore = useCategoryStore();
+const apiUrl = import.meta.env.VITE_APP_API_URL;
+const categoryName = ref("");
 const listProduct = ref([]);
-const listFavorite = ref([]);
-const fetchListFavorite = async () => {
+const favoriteStore = useFavoriteStore();
+
+const fetchListProductByCategoryId = async (categoryId) => {
   try {
-    const response = await favoriteService.getByUser();
-    listFavorite.value = response.data;
-    console.log("List favorite: ", response);
+    const response = await productService.getProductByCategoryId(categoryId);
+    listProduct.value = response.data;
+    console.log("Product detail: ", response);
   } catch (error) {
-    console.log(error.response);
-  }
-};
-
-const fetchListProduct = async () => {
-  try {
-    const response = await productService.getGroupByCategory();
-    listProduct.value = response.groupedProducts;
-  } catch (error) {
-    console.log(error.response);
-  }
-};
-
-
-
-const updateListProductWithLikes = () => {
-  listProduct.value[categoryID.value].forEach((product) => {
-    const isLiked = favoriteStore.listFavorite.some(
-      (favorite) => favorite.product_id == product.product_id
-    );
-    product.liked = isLiked;
-  });
-};
-onMounted(async () => {
-  await categoryStore.fetchListCategory().finally(() => {
-    categoryName = categoryStore.getCategoryNameById(categoryID.value);
-  });
-  console.log("Category name: ", categoryName);
-  fetchListProduct();
-  fetchListFavorite();
-  cartStore.fetchCartCount();
-  searchStore.setDataSearch("");
-  await favoriteStore.fetchListFavorite().finally(() => {
-    updateListProductWithLikes();
-    console.log("List product: ", listProduct.value);
-  });
-
-});
-
-const handleCreateProductLike = async (productId, liked) => {
-  try {
-    if (!liked) {
-      await favoriteStore.createFavorite(productId);
-      showSuccessMessage("Đã thêm vào mục yêu thích");
-      await favoriteStore.fetchListFavorite().finally(() => {
-        updateListProductWithLikes();
-      })
-    } else {
-      await favoriteStore.deleteFavorite(productId);
-      showSuccessMessage("Đã xóa khỏi mục yêu thích");
-      await favoriteStore.fetchListFavorite().finally(() => {
-        updateListProductWithLikes();
-      })
-    }
-
-  } catch (error) {
-    console.log(error.response);
+    console.log(error.response)
   }
 }
 
@@ -153,14 +88,46 @@ const handleCreateProductLike = async (productId, liked) => {
 //     }, 500);
 //   }
 // };
-watchEffect(async () => {
-  await fetchListFavorite();
+
+
+const handleCreateProductLike = async (productId) => {
+  try {
+    const response = await favoriteStore.createFavorite(productId);
+    if (response.status === 'created') {
+      showSuccessMessage("Đã thêm vào mục yêu thích");
+      fetchListProductByCategoryId(categoryID.value);
+    } else {
+      showSuccessMessage("Đã xóa khỏi mục yêu thích");
+      fetchListProductByCategoryId(categoryID.value);
+    }
+
+  } catch (error) {
+    console.log(error.response);
+  }
+}
+watch(() => categoryID.value, (newValue) => {
+  if (newValue) {
+    loading.value = true;
+    fetchListProductByCategoryId(categoryID.value);
+    categoryName.value = categoryStore.getCategoryNameById(categoryID.value);
+    setTimeout(() => {
+
+      loading.value = false;
+    }, 500);
+  }
 });
 
-watch(categoryID, async () => {
-  categoryName = categoryStore.getCategoryNameById(categoryID.value);
-  updateListProductWithLikes();
+onMounted(async () => {
+  await categoryStore.fetchListCategory().then(() => {
+    categoryName.value = categoryStore.getCategoryNameById(categoryID.value);
+  })
+  await favoriteStore.fetchListFavorite();
+  fetchListProductByCategoryId(categoryID.value);
+  setTimeout(() => {
+    loading.value = false;
+  }, 500);
 });
+
 
 
 </script>

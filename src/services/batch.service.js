@@ -32,6 +32,10 @@ class BatchService {
     async checkStockAvailability (data){
         return (await this.api.post('/check/product', data)).data
     }
+
+    async checkProductInStock(product_id){
+        return (await this.api.post(`/check/product/stock/${product_id}`)).data
+    }
 }
 
 export default new BatchService()

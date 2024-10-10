@@ -92,10 +92,10 @@ const props = defineProps({
 const fetchProductDetail = async () => {
     try {
         const response = await productService.get(props.productId);
-        product.value = response.data;
-        productImg.value = JSON.parse(response.data.product_img)[0];
-        if (response.data.product_promotion.length != 0) {
-            promotionUser.value = JSON.parse(response.data.product_promotion[0].promotion.user_group);
+        product.value = response.data[0];
+        productImg.value = JSON.parse(response.data[0].product_img)[0];
+        if (response.data[0].product_promotion.length != 0) {
+            promotionUser.value = JSON.parse(response.data[0].product_promotion[0].promotion.user_group);
         } else {
             promotionUser.value = [];
         }

@@ -46,14 +46,7 @@
 
                 <!-- Search -->
                 <div class="col-12 col-md-3 mt-2">
-                    <form action="#" class="searchform order-lg-last">
-                        <div class="form-group d-flex">
-                            <input type="text" class="form-control pl-3" placeholder="Search">
-                            <button type="submit" placeholder="" class="form-control search">
-                                <span class="fa fa-search"></span>
-                            </button>
-                        </div>
-                    </form>
+                    <Search />
                 </div>
 
                 <!-- Cart & User -->
@@ -110,6 +103,7 @@
 import Cookies from "js-cookie";
 import { ref, onMounted, computed, watch } from 'vue';
 import Notification from '../Notifications/Notification.vue';
+import Search from "../Search/Search.vue";
 import notificationService from '../../services/notification.service';
 import { useCategoryStore } from '../../stores/category';
 import { useAuthStore } from "../../stores/auth";

@@ -32,7 +32,7 @@ export const useProductStore = defineStore("product", {
 
     async fetchListShrimp() {
       try {
-        const response = await productService.getProductFromCategoryNameP({
+        const response = await productService.getProductFromCategoryName({
           category_name: "Tôm khô Cà Mau",
         });
         this.shrimpList = response.data.slice(0, 5);

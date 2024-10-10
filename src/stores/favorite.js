@@ -23,20 +23,11 @@ export const useFavoriteStore = defineStore("favorite", {
         const response = await favoriteService.create({product_id: product_id});
         console.log("Create favorite: ", response);
         this.fetchListFavorite();
+        return response;
       } catch (error) {
         console.log(error.response);
       }
     },
-
-    async deleteFavorite(productId) {
-      try {
-        const response = await favoriteService.delete(productId);
-        console.log("Delete favorite: ", response);
-        this.fetchListFavorite();
-      } catch (error) {
-        console.log(error.response);
-      }
-    }
   },
 
 });

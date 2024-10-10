@@ -45,7 +45,7 @@
                 </div>
                 <hr class="singleline" />
                 <div>
-                    <p v-for="(des, index) in productDetail" class="product_info" :key="index">
+                    <p v-for="(des, index) in productDetail" class="product_info p-0 m-0" :key="index">
                         {{ des }}.
                     </p>
                 </div>
@@ -71,19 +71,19 @@
                     </div>
                     <div class="col-xs-6">
                         <button @click="handleAddToCart(product.product_id, product.weight)" type="button"
-                            class="btn btn-dark shop-button me-1">
-                            Thêm vào giỏ hàng
+                            class="btn btn-dark shop-button me-1 " :class="inStock ? '' : 'button-disabled'"
+                            :disabled="!inStock">
+                            {{ inStock ? 'Thêm vào giỏ hàng' : 'Hết hàng' }}
                         </button>
                         <button @click="handleBuyNow(product.product_id, product.weight)" type="button"
-                            class="btn shop-button" style="background-color: #234A2B; color: white;">
+                            class="btn shop-button" style="background-color: #234A2B; color: white;"
+                            :class="inStock ? '' : 'button-disabled'" :disabled="!inStock">
                             Mua ngay
                         </button>
-                        <div class="product_fav" v-show="!product.liked" @click="createFavorite(product.product_id)">
-                            <i class="fa-regular fa-heart"></i>
+                        <div class="product_fav" @click="createFavorite(product.product_id)">
+                            <i class=" fa-heart" :class="product.liked ? 'fa-solid' : 'fa-regular'"></i>
                         </div>
-                        <div class="product_fav" v-show="product.liked" @click="deleteFavorite(product.product_id)">
-                            <i class="fa-solid fa-heart"></i>
-                        </div>
+
                     </div>
                 </div>
             </div>
@@ -92,7 +92,7 @@
 </template>
 
 <script setup>
-import { onMounted } from 'vue';
+import { onMounted, ref } from 'vue';
 import { toRefs } from 'vue';
 
 const props = defineProps({
@@ -104,9 +104,12 @@ const props = defineProps({
     img_3: String,
     quantity: Number,
     loading: Boolean,
+    inStock: Boolean
 });
 
 const { product, productDetail, averageRating, img_1, img_2, img_3, quantity, loading } = toRefs(props);
+
+
 
 const formatCurrency = (amount) => {
     return (
@@ -137,9 +140,6 @@ const createFavorite = (product_id) => {
     emit('create-favorite', product_id);
 };
 
-const deleteFavorite = (product_id) => {
-    emit('delete-favorite', product_id);
-};
 
 const emit = defineEmits([
     'increment-quantity',
@@ -147,15 +147,29 @@ const emit = defineEmits([
     'add-to-cart',
     'buy-now',
     'create-favorite',
-    'delete-favorite'
 ]);
 
 onMounted(() => {
-    console.log("Data Product Detail component: ", props);
+
+    console.log("props in product detail: ", props);
 })
 </script>
 
 <style scoped>
+.product_info {
+    font-size: 16px;
+    line-height: 24px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.button-disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    color: rgb(225, 13, 13);
+    background-color: #050101;
+}
+
 .design-button-amount {
     height: 20px;
 }
