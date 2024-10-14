@@ -50,7 +50,7 @@
             </div>
         </div>
         <div v-show="dataReviewByProductLength === 0">
-            <p class="text-center">Không có đánh giá nào</p>
+            <p class="text-center text-muted mt-5">Không có đánh giá nào</p>
         </div>
     </div>
 </template>
@@ -85,7 +85,7 @@ const fetchReviewByProduct = async () => {
     try {
         const response = await reviewService.getByProduct(props.productId);
         listCommentReview.value = response.data;
-        dataReviewByProductLength.value = response.length;
+        dataReviewByProductLength.value = response.length || 0;
         console.log("Fetch review by product: ", response);
     } catch (error) {
         console.log(error.response);

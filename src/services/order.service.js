@@ -40,6 +40,10 @@ class OrderService {
   async updateStatus(data, id) {
     return (await this.api.patch(`/bill/update/${id}`, data)).data;
   }
+
+  async sendOrderConfirmationEmail(id){
+    return (await this.api.post(`/send-email/${id}`)).data
+  }
 }
 
 export default new OrderService();

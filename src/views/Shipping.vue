@@ -6,13 +6,13 @@
     <div class="row mt-3">
       <p>
         Nhằm đem lại sự thuận tiện cho quý khách hàng trong việc mua hàng tại
-        SINI Food chúng tôi xin trân trọng thông báo chính sách giao hàng toàn
+        cửa hàng, chúng tôi xin trân trọng thông báo chính sách giao hàng toàn
         quốc như sau:
       </p>
       <p class="font-weight-600">PHÍ GIAO HÀNG</p>
-      <p>Phí giao hàng sẽ được tính theo đơn vị vận chuyển NINJA - VAN</p>
+      <p>Phí giao hàng sẽ được tính theo đơn vị vận chuyển giao hàng tiết kiệm</p>
       <div class="text-center">
-        <img class="design-first-img" src="../assets/img/guide6.jpg" alt="" />
+        <img class="design-first-img" src="../../public/assets/images/ship/ghtk.jpg" alt="" />
       </div>
     </div>
   </div>
@@ -22,7 +22,8 @@
 
 <style>
 .design-first-img {
-  width: 950px;
+  width: 600px;
+  margin-bottom: 20px;
 }
 
 @media (max-width: 739px) {

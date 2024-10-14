@@ -18,8 +18,8 @@
         huyện U Minh, tỉnh Cà Mau
       </p>
       <p>
-        <i class="fa-solid fa-location-dot"></i> Cửa hàng: ấp 10 xã Khánh Tiến,
-        huyện U Minh, tỉnh Cà Mau
+        <i class="fa-solid fa-location-dot"></i> Cửa hàng: Khu II, Đ. 3 Tháng 2, Xuân Khánh, Ninh Kiều, Cần Thơ, Việt
+        Nam
       </p>
       <p><i class="fa-solid fa-phone"></i> 0943 808 107</p>
       <p>
@@ -28,8 +28,9 @@
       <div class="googlemap text-center">
         <div class="main_wrap">
           <iframe
-            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3919.8677115376036!2d106.68362051422501!3d10.74467746271838!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31752ff0a4682613%3A0xae5b909e88031d78!2zU0lOSSBGb29kIC0gxJDhurdjIHPhuqNuIEPDoCBNYXU!5e0!3m2!1svi!2s!4v1533828416894"
-            width="861" height="450" frameborder="0" style="border: 0" allowfullscreen></iframe>
+            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3928.84145437711!2d105.76804037551508!3d10.029938972517845!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31a0895a51d60719%3A0x9d76b0035f6d53d0!2zxJDhuqFpIGjhu41jIEPhuqduIFRoxqE!5e0!3m2!1svi!2s!4v1728662198561!5m2!1svi!2s"
+            width="861" height="450" style="border:0;" allowfullscreen="" loading="lazy"
+            referrerpolicy="no-referrer-when-downgrade"></iframe>
         </div>
       </div>
     </div>

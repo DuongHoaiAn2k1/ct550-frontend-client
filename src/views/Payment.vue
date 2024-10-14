@@ -49,7 +49,7 @@
                           <h6 class="small mb-0">
                             <a href="#" class="text-reset">{{
                               getProduct(data.product_id)?.product_name
-                            }}</a>
+                              }}</a>
                           </h6>
                           <span class="small">Giá:
                             {{
@@ -397,8 +397,10 @@ const handleCreateOrderDetail = async (data) => {
   try {
     const response = await order_detailService.create(data);
     console.log("After create order detail: ", response);
+    return response;
   } catch (error) {
     console.log(error.response);
+    throw error;
   }
 }
 
@@ -450,7 +452,6 @@ const preprocessOrder = async () => {
           handleOrder('pending_payment').then(() => {
             handleDeleteCart();
             cartStore.deleteCart();
-
             window.location.href = response.data;
           })
 
@@ -530,6 +531,7 @@ const handleOrder = async (status) => {
         }
 
         await userService.pointDecrement({ point_used: pointUsed.value });
+        orderService.sendOrderConfirmationEmail(order_id);
         if (payMethod.value == 'cod') {
           const loadingNotification = showLoading();
           setTimeout(() => {
@@ -598,24 +600,6 @@ onMounted(() => {
   }, 1000);
   // console.log(cartStore.addressToPay);
 });
-
-function calculateShippingFee(weight) {
-  let baseFee = 22000; // Base fee per kg
-  let additionalFee = 0;
-  let shippingFee = 0;
-
-  if (weight <= 1) {
-    shippingFee = baseFee * weight;
-  } else if (weight <= 2) {
-    shippingFee = 27000 * weight;
-  } else if (weight <= 3) {
-    shippingFee = 30000 * weight;
-  } else {
-    additionalFee = 6000; // Increase 3000 VND for each kg over 3 kg
-    shippingFee = (baseFee + additionalFee * (weight - 3)) * weight;
-  }
-  return shippingFee;
-}
 
 </script>
 

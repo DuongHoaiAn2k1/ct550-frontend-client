@@ -29,7 +29,10 @@
                 </button>
               </div>
 
-              <a class="d-block text-center mt-2 small" href="#">Quên mật khẩu?</a>
+              <div class="text-center">
+                <a @click="isShowForgetForm = !isShowForgetForm" class="mt-2 small  me-3" href="#">Quên mật khẩu?</a>
+                <router-link :to="{ name: 'register' }" class="mt-2 small" href="#">Đăng ký</router-link>
+              </div>
 
               <hr class="my-4" />
 
@@ -50,6 +53,27 @@
       </div>
     </div>
   </div>
+
+  <el-dialog v-model="isShowForgetForm" width="500" center>
+    <div class="card text-center form-reset-password" style="width: 450px;">
+      <div class="card-header h5 text-white bg-dark">Cấp lại mật khẩu</div>
+      <div class="card-body px-5">
+        <p class="card-text py-2">
+          Điền email tài khoản của bạn để đặt lại mật khẩu. Mật khẩu mới sẽ được gửi vào email của bạn. Bạn chỉ có thể
+          cập
+          nhật mật khẩu 1 lần/tháng.
+        </p>
+        <div data-mdb-input-init class="form-outline">
+          <input v-model="emailReset" type="email" id="typeEmail" class="form-control" />
+          <span class="d-block text-danger">{{ emailResetError }}</span>
+          <label class="form-label" for="typeEmail">Email</label>
+        </div>
+        <a href="#" @click="handleResetPassword" data-mdb-ripple-init class="btn btn-dark w-100">Cấp lại mật khẩu</a>
+      </div>
+    </div>
+  </el-dialog>
+
+
 </template>
 
 <script setup>
@@ -60,10 +84,16 @@ import { ElLoading, ElNotification } from "element-plus";
 import { useAuthStore } from "@/stores/auth";
 import { useProductStore } from "@/stores/product";
 import authService from "@/services/auth.service";
+import userService from "@/services/user.service";
 import { useRouter } from "vue-router";
 import { h } from "vue";
 import { showSuccess, showWarning } from "@/helpers/NotificationHelper";
+import { watch } from "vue";
 
+
+const emailReset = ref("");
+const emailResetError = ref(null);
+const isShowForgetForm = ref(false);
 const authStore = useAuthStore();
 const productStore = useProductStore();
 const router = useRouter();
@@ -112,11 +142,12 @@ const submitLogin = async (event) => {
           const refresh_token = response.refresh_token;
           const email = response.email;
           const user_id = response.user_id;
+          const role = response.role;
           const affiliate_role = response.affiliate_role;
           if (affiliate_role != null) {
             Cookies.set("isAffiliateLogin", affiliate_role, { expires: 7 });
           }
-          authStore.login(access_token, refresh_token, email, user_id);
+          authStore.login(access_token, refresh_token, email, user_id, role);
           // Cookies.set("token", token, { expires: 1 });
           localStorage.setItem("requireLogin", false);
           showSuccess("Đăng nhập thành công");
@@ -150,16 +181,45 @@ const submitLogin = async (event) => {
     });
 };
 
-const notificationLogin = () => {
-  ElNotification({
-    title: "Thông báo",
-    message: h(
-      "i",
-      { style: "color: teal" },
-      "Chức năng hiện tại đang trong quá trình xây dựng"
-    ),
-  });
+const resetPassword = async () => {
+  try {
+    if (!emailReset.value) {
+      emailResetError.value = 'Email không được để trống';
+      throw new Error('Validation error'); // Thêm throw ở đây để chặn tiếp tục thực hiện nếu validation thất bại
+    }
+
+    const response = await userService.resetPassword({
+      email: emailReset.value
+    });
+
+    return response;
+
+  } catch (error) {
+    console.log(error.response);
+    showWarning(error.response.data.message);
+    throw error;
+  }
 };
+
+const handleResetPassword = () => {
+  const loading = ElLoading.service({
+    lock: true,
+    text: "Đang xử lý...",
+    background: "rgba(0,0,0, 0.7)",
+  });
+
+  resetPassword()
+    .then(() => {
+      setTimeout(() => {
+        showSuccess('Yêu cầu đã được gửi');
+        loading.close();
+      }, 1500);
+    })
+    .catch((error) => {
+      loading.close();
+    });
+};
+
 
 const loginWithGoogle = () => {
   const googleLoginUrl = 'https://dacsancamau.com/api/auth/google';
@@ -205,12 +265,27 @@ onMounted(() => {
     showWarning("Vui lòng đăng nhập")
   }
 });
+
+watch(dataLogin, (newValue) => {
+  if (newValue) {
+    emailErrors.value = null;
+    passwordErrors.value = null;
+  }
+});
 </script>
 
 <style scoped>
-body {
-  background: #007bff;
-  background: linear-gradient(to right, #0062e6, #33aeff);
+.form-reset-password {}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
+
 }
 
 .card-img-left {

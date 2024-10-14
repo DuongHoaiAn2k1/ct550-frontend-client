@@ -41,9 +41,7 @@
 import { ref } from 'vue';
 import debounce from 'lodash/debounce';
 import searchService from '../../services/search.service';
-import { useRouter } from 'vue-router';
 
-const router = useRouter();
 const apiUrl = import.meta.env.VITE_APP_API_URL;
 const state = ref('');
 const products = ref([]);

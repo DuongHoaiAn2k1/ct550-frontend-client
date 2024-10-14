@@ -1,6 +1,6 @@
 <template>
   <section class="h-100 gradient-custom">
-    <div class="container py-2 h-100">
+    <div class="py-2 h-100">
       <div class="row d-flex justify-content-center align-items-center h-100">
         <div class="col-lg-10 col-xl-8">
           <div class="card" style="border-radius: 10px">

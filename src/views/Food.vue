@@ -3,9 +3,7 @@
     <div class="row">
       <h3 class="font-weight-600">GIỚI THIỆU CHUNG VỀ ẨM THỰC CÀ MAU</h3>
       <div class="text-center mt-5">
-        <img class="design-first-img"
-          src="https://camau.gov.vn/wps/wcm/connect/85f1a577-7e55-42ba-bbeb-6b1fb8032ff6/1/11.jpg?MOD=AJPERES&CVID="
-          alt="" />
+        <img class="design-first-img" src="../../public/assets/images/foods/oclen.jpg" alt="" />
 
         <p><span>Ốc len xào dừa </span></p>
       </div>
@@ -28,9 +26,7 @@
     </div>
     <div class="row">
       <div class="text-center">
-        <img class="design-first-img"
-          src="https://camau.gov.vn/wps/wcm/connect/85f1a577-7e55-42ba-bbeb-6b1fb8032ff6/2/12.jpg?MOD=AJPERES&CVID="
-          alt="" />
+        <img class="design-first-img" src="../../public/assets/images/foods/cua.jpg" alt="" />
         <p><span>Cua gạch luộc </span></p>
       </div>
       <p>
@@ -70,9 +66,7 @@
     </div>
     <div class="row">
       <div class="text-center">
-        <img class="design-first-img"
-          src="https://camau.gov.vn/wps/wcm/connect/85f1a577-7e55-42ba-bbeb-6b1fb8032ff6/3/chuoikho.jpg?MOD=AJPERES&CVID="
-          alt="" />
+        <img class="design-first-img" src="../../public/assets/images/foods/chuoi.jpg" alt="" />
         <p><span>Chuối khô </span></p>
       </div>
       <p>

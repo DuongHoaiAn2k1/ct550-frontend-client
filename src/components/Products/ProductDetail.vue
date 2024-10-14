@@ -36,7 +36,7 @@
                     <span class="product_price">{{ formatCurrency(product.product_price) }}</span>
                 </div>
                 <p class="text-muted mb-0">
-                    <el-rate v-model="product.average_rating
+                    <el-rate v-model="averageRating
                         " disabled show-score text-color="#ff9900" score-template="{value} points" />
                 </p>
                 <div>
@@ -95,6 +95,7 @@
 import { onMounted, ref } from 'vue';
 import { toRefs } from 'vue';
 
+const averageRating = ref(0);
 const props = defineProps({
     product: Object,
     productDetail: Array,
@@ -107,7 +108,7 @@ const props = defineProps({
     inStock: Boolean
 });
 
-const { product, productDetail, averageRating, img_1, img_2, img_3, quantity, loading } = toRefs(props);
+const { product, productDetail, img_1, img_2, img_3, quantity, loading } = toRefs(props);
 
 
 
@@ -150,7 +151,7 @@ const emit = defineEmits([
 ]);
 
 onMounted(() => {
-
+    averageRating.value = props.product.average_rating || 0;
     console.log("props in product detail: ", props);
 })
 </script>

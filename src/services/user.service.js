@@ -48,6 +48,10 @@ class UserService {
   async updateNameAndPhone(data) {
     return (await this.api.patch("/update/name-phone", data)).data;
   }
+
+  async resetPassword(data) {
+    return (await this.api.post("/reset/password/user", data)).data;
+  }
 }
 
 export default new UserService();

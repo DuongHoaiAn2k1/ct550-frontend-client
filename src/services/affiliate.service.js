@@ -5,8 +5,8 @@ class AffiliateService {
         this.api = createApiClient(baseUrl);
     }
 
-    async create(){
-        return (await this.api.post("request/create")).data;
+    async create(data){
+        return (await this.api.post("request/create", data)).data;
     }     
 
     async getAll(){

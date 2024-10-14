@@ -318,13 +318,13 @@
                 khoản
               </li>
               <li class="list-group-item list-group-item-action my-1 btn" @click="dialogUpdatePassword = true"
-                :class="Cookies.get('isGoogleLogin') ? 'disabled-item' : ''">
+                :class="Cookies.get('isGoogleLogin') == 'true' ? 'disabled-item' : ''">
                 <i class="fa-solid fa-key"></i> Đổi mật khẩu
               </li>
               <li class="list-group-item list-group-item-action my-1 btn">
                 <i class="fa-solid fa-trash"></i> Xóa tài khoản
               </li>
-              <li v-show="!affiliateStatus == 'approved' || !affiliateStatus"
+              <li v-show="affiliateStatus != 'approved' || !affiliateStatus"
                 class="list-group-item list-group-item-action my-1 btn" @click="dialogAffiliateRegister = true">
                 <i class="fa-solid fa-user-ninja"></i> Đăng ký tiếp thị
               </li>
@@ -473,6 +473,19 @@
     </div>
 
     <div class="mb-3 row">
+      <label for="social_media_link" class="col-sm-2 col-form-label">Link mạng xã hội</label>
+      <div class="col-sm-10">
+        <input v-model="affiliateData.social_media_link" type="text" class="form-control" id="social_media_link"
+          placeholder="Link trang cá nhân facebook hoặc các mạng xã hội khác"
+          :disabled="affiliateStatus == 'pending'" />
+      </div>
+    </div>
+    <div class="mb-3 mt-0 row">
+      <span class="col-sm-2"></span>
+      <span class="col-sm-10 text-danger">{{ affiliateSocialMediaLinkError }}</span>
+    </div>
+
+    <div class="mb-3 row">
       <label for="phoneNumber" class="col-sm-2 col-form-label">Số điện thoại</label>
       <div class="col-sm-10">
         <input type="text" class="form-control" id="phoneNumber" v-model="affiliateData.phone"
@@ -580,6 +593,7 @@ const schema = Yup.object().shape({
 });
 
 const affiliateNameError = ref(null);
+const affiliateSocialMediaLinkError = ref(null);
 const affiliatePhoneNumberError = ref(null);
 const isAgree = ref(false);
 const affiliateStatus = ref("");
@@ -590,6 +604,7 @@ const affiliateSchema = Yup.object().shape({
     .min(10, "Số điện thoại phải 10 ký tự")
     .max(10, "Số điện thoại phải 10 ký tự")
     .required("Số điện không được để trống"),
+  social_media_link: Yup.string().required("Link mạng xã hội không được để trống"),
 
 });
 
@@ -600,7 +615,9 @@ const submitRequest = () => {
     affiliateSchema.validate(affiliateData.value, { abortEarly: false }).then(async () => {
       const userUpdateResponse = await userService.updateNameAndPhone(affiliateData.value);
       if (userUpdateResponse.status == "success") {
-        const response = await affiliateService.create();
+        const response = await affiliateService.create({
+          social_media_link: affiliateData.value.social_media_link
+        });
 
         if (response.status == "success") {
           showSuccess("Yêu cầu của bạn đã được gửi đi");
@@ -614,6 +631,9 @@ const submitRequest = () => {
         }
         if (error.path == "phone") {
           affiliatePhoneNumberError.value = error.message;
+        }
+        if (error.path == "social_media_link") {
+          affiliateSocialMediaLinkError.value = error.message;
         }
       })
     });
@@ -660,6 +680,7 @@ const affiliateData = ref({
   name: "",
   email: "",
   phone: "",
+  social_media_link: "",
 });
 
 const cityAddress = ref(0);

@@ -54,6 +54,10 @@ class ProductService {
   async getProductByCategoryId(id) {
     return (await this.api.get(`/category/${id}`)).data;
   }
+
+  async searchAi(data) {
+    return (await this.api.post("/search-ai/query", data)).data;
+  }
 }
 
 export default new ProductService();

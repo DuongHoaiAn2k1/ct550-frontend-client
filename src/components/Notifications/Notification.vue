@@ -1,5 +1,6 @@
 <template>
     <div class="notification-list-wrapper">
+        <div class="text-center" v-show="notificationStore.length == 0">Không có thông báo</div>
         <div v-show="notificationStore.length != 0" class="notification-list" :class="{ 'scrollable': isAllShown }">
             <div class="notification" :class="notification.is_user_read ? 'notifcation-default' : 'notification-read'"
                 v-for="notification in notificationsToShow" :key="notification.id">
@@ -7,7 +8,7 @@
                 <span class="avatar"><i class="fa-solid fa-circle-exclamation"></i></span>
                 <div class="notification-content">
                     <p style="font-size: 14px;">
-                        <strong>{{ getNotificationMessage(notification.route_name) }}</strong>&nbsp;
+                        <strong>{{ notificationStore.getMessageById(notification.id) }}</strong>&nbsp;
                         <span>{{ getSubNotification(notification.route_name) }}&nbsp;{{
                             convertTime(notification.created_at) }} </span>&nbsp;
                         <router-link :to="{ name: getRouteNameUser(notification.route_name) }">Đi đến</router-link>

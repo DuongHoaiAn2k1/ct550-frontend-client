@@ -15,7 +15,10 @@ export const useNotificationStore = defineStore("notification", {
            this.length = response.data.length;
            this.count_unread = response.count_unread;
         },
-
+        
+         getMessageById(id) {
+            return this.notifications.find(notification => notification.id === id)?.message;
+        },
         
     },
 });

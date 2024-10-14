@@ -1,5 +1,5 @@
 <template>
-    <div class="card mx-2 col col-md-3 mb-1">
+    <div class="card mx-2 col col-md-3 mb-3">
         <div class="image-container">
             <router-link :to="{ name: 'product-detail', params: { id: productId } }">
                 <img :src="image" />

@@ -158,6 +158,10 @@ echoInstance.channel('affiliate-approved').listen('.affiliate-approved', async (
     await notificationStore.getByUser();
 });
 
+echoInstance.channel('affiliate-rejected').listen('.affiliate-rejected', async (event) => {
+    await notificationStore.getByUser();
+});
+
 onMounted(async () => {
 
     if (Cookies.get("isUserLoggedIn") == "true") {

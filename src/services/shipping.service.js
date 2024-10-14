@@ -5,8 +5,8 @@ class ShippingService {
         this.api = createApiClient(baseUrl);
         
         this.defaultParams = {
-            pick_province: "Cà Mau",
-            pick_district: "Huyện U Minh",
+            pick_province: "Cần Thơ",
+            pick_district: "Ninh Kiều",
             transport: "road",
             deliver_option: "none"
         };
