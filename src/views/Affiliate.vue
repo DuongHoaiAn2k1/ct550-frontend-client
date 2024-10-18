@@ -102,7 +102,7 @@
                             <el-button small class="ms-3" @click="showFormRequest = true">Rút tiền</el-button>
                         </div>
                         <h5 class="mt-3">Lịch sử rút tiền</h5>
-                        <WithdrawalTable class="mt-3" />
+                        <WithdrawalTable ref="withdrawal" class="mt-3" />
                     </el-tab-pane>
                 </el-tabs>
             </div>
@@ -166,11 +166,13 @@ import * as Yup from 'yup';
 import affiliateService from '../services/affiliate.service';
 import { formatCurrency } from '../../../admin/src/helpers/UtilHelper';
 import { showLoading } from '../helpers/LoadingHelper';
-import { showSuccess } from '../helpers/NotificationHelper';
+import { showSuccess, showWarning } from '../helpers/NotificationHelper';
 import UserProductTable from '../components/Affiliate/UserProductTable.vue';
 import OrderDataTable from '../components/Affiliate/OrderDataTable.vue';
 import WithdrawalTable from '../components/Affiliate/WithdrawalTable.vue';
 import bankData from '../assets/bank/bank.json';
+import { initializeEcho } from "../pusher/echoConfig";
+
 const showFormRequest = ref(false);
 const activeTab = ref('product');
 const search = ref('');
@@ -179,9 +181,22 @@ const pageSize = 10;
 const listCommission = ref([]);
 const balance = ref(0);
 const apiUrl = import.meta.env.VITE_APP_API_URL;
+const echoInstance = initializeEcho();
+const withdrawal = ref(null);
+
+
+echoInstance.channel('affiliate-product')
+    .listen('.created', async (event) => {
+        fetchlistCommission();
+    });
+
+echoInstance.channel('affiliate-withdrawal')
+    .listen('.request-withdrawal-sent', async (event) => {
+        fetchBalance();
+    });
 
 const withDrawalSchema = Yup.object().shape({
-    amount: Yup.number().required('Số tiền rút không được để trống').min(1000, 'Số tiền rút tối thiểu 1000 VNĐ'),
+    amount: Yup.number().required('Số tiền rút không được để trống').min(50000, 'Số tiền rút tối thiểu ' + formatCurrency(50000)),
     bankName: Yup.string().required('Tên ngân hàng không được để trống'),
     accountNumber: Yup.string().required('Số tài khoản không được để trống'),
     accountHolderName: Yup.string().required('Tên chủ thẻ không được để trống')
@@ -227,6 +242,11 @@ const hanleWithDrawal = async () => {
         accountNumberError.value = '';
         accountHolderNameError.value = '';
         const loading = showLoading();
+        if (withDrawalData.value.amount > balance.value) {
+            showWarning('Số tiền vượt quá số dư của bạn');
+            loading.close();
+            return;
+        }
         const response = await affiliateService.createWithdraw({
             amount: withDrawalData.value.amount,
             bank_name: withDrawalData.value.bankName,
@@ -239,6 +259,9 @@ const hanleWithDrawal = async () => {
             showFormRequest.value = false;
             loading.close();
             showSuccess('Yêu cầu rút tiền đã được gửi đi');
+            if (withdrawal.value) {
+                withdrawal.value.fetchWithdrawal();
+            }
             fetchBalance();
         }, 1000);
     }).catch((errors) => {
@@ -307,6 +330,10 @@ const handleCurrentChange = (val) => {
 </script>
 
 <style scoped>
+:deep(.el-pagination .el-pager .is-active) {
+    background-color: black !important;
+}
+
 :deep(.demo-tabs .el-tabs__header) {
     background-color: #333 !important;
     color: white;

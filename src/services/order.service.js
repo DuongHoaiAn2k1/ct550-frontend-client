@@ -8,6 +8,10 @@ class OrderService {
   async get(id) {
     return (await this.api.get(`/${id}`)).data;
   }
+
+  async getByBillId(id) {
+    return (await this.api.get(`/bill/${id}`)).data;
+  }
   async getByUser() {
     return (await this.api.get("/user/get")).data;
   }

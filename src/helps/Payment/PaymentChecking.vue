@@ -23,6 +23,7 @@
 </template>
 
 <script setup>
+import Cookies from 'js-cookie';
 import { ref, onMounted } from 'vue';
 import paymentService from '../../services/payment.service';
 import { useRoute } from 'vue-router';
@@ -47,6 +48,10 @@ const handlePaymentChecking = async (params) => {
                 }, route.query.vnp_TxnRef);
             }, 1500);
         } else {
+            await orderService.cancel(route.query.vnp_TxnRef).then(() => {
+                orderService.delete(route.query.vnp_TxnRef);
+            });
+
             setTimeout(() => {
                 loading.close();
                 showResult.value = false;
@@ -63,6 +68,9 @@ const handlePaymentChecking = async (params) => {
 }
 
 onMounted(() => {
+    if (Cookies.get('recentOrderBillId')) {
+        Cookies.remove('recentOrderBillId');
+    }
     const params = {
         vnp_Amount: route.query.vnp_Amount,
         vnp_BankCode: route.query.vnp_BankCode,

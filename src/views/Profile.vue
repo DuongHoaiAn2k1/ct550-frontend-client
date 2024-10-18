@@ -107,6 +107,12 @@
                                   <div class="col-3 detail-off">
                                     <div class="d-flex flex-wrap gap-3 mt-3 mt-xl-0 justify-content-md-end">
                                       <div>
+                                        <span v-show="data.status == 'payment_failed'"
+                                          class="badge rounded-pill text-danger font-size-11 task-status">Thanh toán
+                                          thất bại</span>
+                                        <span v-show="data.status == 'pending_payment'"
+                                          class="badge rounded-pill text-warning font-size-11 task-status">Chờ thanh
+                                          toán</span>
                                         <span v-show="data.status == 'preparing'"
                                           class="badge rounded-pill text-info font-size-11 task-status">Đang chuẩn
                                           bị</span>
@@ -389,8 +395,12 @@
                           </div>
                         </td>
                       </tr>
+
                     </tbody>
                   </table>
+                  <div class="text-center">
+                    <span v-show="favoriteStore.length == 0" style="font-size: 20px;"> Không có sản phẩm nào</span>
+                  </div>
                   <div class="text-end">
                     <el-pagination v-model:current-page="currentPage" @current-change="handleCurrentChange" small
                       background layout="prev, pager, next" :total="Math.ceil(favoriteStore.length / pageSize) * 10"
@@ -459,7 +469,7 @@
       <label for="name" class="col-sm-2 col-form-label">Họ và tên</label>
       <div class="col-sm-10">
         <input type="text" class="form-control" id="name" v-model="affiliateData.name"
-          :disabled="affiliateStatus == 'pending'" />
+          :disabled="affiliateStatus == 'pending' || affiliateStatus == 'rejected'" />
       </div>
       <span class="text-danger text-center">{{ affiliateNameError }}</span>
     </div>
@@ -477,7 +487,7 @@
       <div class="col-sm-10">
         <input v-model="affiliateData.social_media_link" type="text" class="form-control" id="social_media_link"
           placeholder="Link trang cá nhân facebook hoặc các mạng xã hội khác"
-          :disabled="affiliateStatus == 'pending'" />
+          :disabled="affiliateStatus == 'pending' || affiliateStatus == 'rejected'" />
       </div>
     </div>
     <div class="mb-3 mt-0 row">
@@ -489,7 +499,7 @@
       <label for="phoneNumber" class="col-sm-2 col-form-label">Số điện thoại</label>
       <div class="col-sm-10">
         <input type="text" class="form-control" id="phoneNumber" v-model="affiliateData.phone"
-          :disabled="affiliateStatus == 'pending'" />
+          :disabled="affiliateStatus == 'pending' || affiliateStatus == 'rejected'" />
       </div>
 
     </div>
@@ -531,6 +541,9 @@
       <button v-show="affiliateStatus == 'pending'" type="button" class="btn btn-danger" disabled>
         Yêu cầu của bạn đang được xử lý
       </button>
+      <button v-show="affiliateStatus == 'rejected'" type="button" class="btn btn-danger" disabled>
+        Yêu cầu của bạn đã bị từ chối
+      </button>
     </div>
   </el-dialog>
 
@@ -550,22 +563,44 @@ import addressData from "@/assets/address/dvhc.json";
 import { convertTime, formatCurrency } from '@/helpers/UtilHelper';
 import { showSuccess, showWarning } from "../helpers/NotificationHelper";
 import { showLoading } from "../helpers/LoadingHelper";
-import orderService from "@/services/order.service";
 import affiliateService from "@/services/affiliate.service";
 import favoriteService from "@/services/favorite.service";
 import { useRouter } from "vue-router";
 import { initializeEcho } from "../pusher/echoConfig";
 
 const apiUrl = import.meta.env.VITE_APP_API_URL;
+const authStore = useAuthStore();
 
+const userId = computed(() => authStore.user_id);
+const favoriteStore = useFavoriteStore();
+const orderStore = useOrderStore();
+const userData = ref({});
+const nameUser = ref("");
+const imageUpdate = ref("");
+const listAddressUser = ref([]);
+const currentPage = ref(1);
+const pageSize = 4;
+// Define some value for hanlde Update Password
+const newPass = ref("");
+const oldPass = ref("");
+const passWordError = ref(null);
 const echoInstance = initializeEcho();
 
 
-echoInstance.channel('admin-channel')
+echoInstance.channel(`user-channel.${userId.value}`)
   .listen('.order.update.status', async (event) => {
     orderStore.fetchListOrder();
-
   });
+
+echoInstance.channel(`user-channel.${userId.value}`).listen('.affiliate-approved', async (event) => {
+  hanleCheckStatusAffiliate();
+});
+
+echoInstance.channel(`order-updated.${userId.value}`)
+  .listen('.order.status.updated.failed', async (event) => {
+    orderStore.fetchListOrder();
+  });
+
 
 const router = useRouter();
 // Dialog var
@@ -621,6 +656,7 @@ const submitRequest = () => {
 
         if (response.status == "success") {
           showSuccess("Yêu cầu của bạn đã được gửi đi");
+          hanleCheckStatusAffiliate();
           dialogAffiliateRegister.value = false;
         }
       }
@@ -650,19 +686,6 @@ const hanleCheckStatusAffiliate = async () => {
   }
 }
 
-const favoriteStore = useFavoriteStore();
-const authStore = useAuthStore();
-const orderStore = useOrderStore();
-const userData = ref({});
-const nameUser = ref("");
-const imageUpdate = ref("");
-const listAddressUser = ref([]);
-const currentPage = ref(1);
-const pageSize = 4;
-// Define some value for hanlde Update Password
-const newPass = ref("");
-const oldPass = ref("");
-const passWordError = ref(null);
 
 // End define
 
@@ -954,6 +977,7 @@ onMounted(async () => {
   fetchUserData();
   await favoriteStore.fetchListFavorite();
   await orderStore.fetchListOrder();
+  Cookies.remove("recentOrderBillId");
 
   // console.log("GET: ", getDataDistric("01")[0].name);
 });
@@ -992,6 +1016,10 @@ const paginatedList = computed(() => {
 </script>
 
 <style scoped>
+:deep(.el-pagination .el-pager .is-active) {
+  background-color: black !important;
+}
+
 .disabled-item {
   cursor: not-allowed;
   opacity: 0.5;

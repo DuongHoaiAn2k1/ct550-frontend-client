@@ -8,8 +8,13 @@
               <h5 class="text-muted mb-2" style="font-weight: 600;">
                 Đơn hàng của bạn,
                 <span style="color: #a8729a">{{ address.name }}</span>!
+                <div v-show="order.status == 'pending_payment'" class="text-end">
+                  <span class="mb-5"><el-countdown title="Thời gian còn lại để thanh toán" format="HH:mm:ss"
+                      :value="lifetime" /></span>
+                </div>
               </h5>
-              <el-steps v-show="order.status != 'cancelled'"
+              <el-steps
+                v-show="order.status != 'cancelled' && order.status != 'pending_payment' && order.status != 'payment_failed'"
                 :active="(order.status == 'preparing') ? 1 : order.status == 'shipping' ? 2 : 3" align-center>
                 <el-step title="Đang chuẩn bị" />
                 <el-step title="Đang giao" />
@@ -30,6 +35,12 @@
                 <p></p>
                 <p v-show="order.paid === 1 && order.status != 'cancelled'" class="small text-muted mb-0">
                   <el-tag type="success">Đã thanh toán</el-tag>
+                </p>
+                <p v-show="order.status == 'pending_payment'" class="small text-muted mb-0">
+                  <el-tag type="warning">Chờ thanh toán</el-tag>
+                </p>
+                <p v-show="order.status == 'payment_failed'" class="small text-muted mb-0">
+                  <el-tag type="danger">Thanh toán thất bại</el-tag>
                 </p>
                 <p v-show="order.status === 'cancelled'" class="small text-muted mb-0">
                   <el-tag type="danger">Đã hủy</el-tag>
@@ -152,6 +163,11 @@
                   style="font-size: 20px">Hủy đơn
                   hàng</span></el-button>
             </div>
+            <div class="text-center my-1" v-show="order.status == 'pending_payment'">
+              <el-button @click="handleRePayment" size="large"><span style="font-size: 20px">Thanh toán
+                  lại</span></el-button>
+
+            </div>
             <el-dialog v-model="centerDialogVisible1" width="500" align-center>
               <span>Bạn có chắc chắn muốn hủy đơn hàng</span>
               <template #footer>
@@ -198,21 +214,36 @@
 </template>
 
 <script setup>
+import Cookies from "js-cookie";
+import { useAuthStore } from "@/stores/auth";
 import orderService from "@/services/order.service";
-import { onMounted, ref } from "vue";
+import { onMounted, ref, computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { ElLoading, ElNotification, ElMessage } from "element-plus";
 import userService from "@/services/user.service";
+import paymentService from "../services/payment.service";
 import order_detailService from "../services/order_detail.service";
 import refundService from "../services/refund.service";
 import { initializeEcho } from "../pusher/echoConfig";
+
+const currentDay = new Date();
+const authStore = useAuthStore();
 const apiUrl = import.meta.env.VITE_APP_API_URL;
+const userId = computed(() => authStore.user_id);
 const echoInstance = initializeEcho();
+
+
 echoInstance.channel('admin-channel')
   .listen('.order.update.status', async (event) => {
     fetchOrder();
-
   });
+
+echoInstance.channel(`order-updated.${userId}`)
+  .listen('.order.status.updated.failed', async (event) => {
+    fetchOrder();
+  });
+
+const lifetime = ref(Date.now() + 1000 * 60 * 60 * 24 * 2)
 const centerDialogVisible1 = ref(false);
 const centerDialogVisible2 = ref(false);
 const order = ref([]);
@@ -228,8 +259,10 @@ const fetchOrder = async () => {
     address.value = JSON.parse(response.data.order_address);
     productIncrease.value = response.data.order_detail;
     console.log("Detail of order: ", response);
+    return response;
   } catch (error) {
     console.log(error.response);
+    throw error;
   }
 };
 
@@ -275,6 +308,47 @@ const handleCreateRefund = async (orderId) => {
   }
 };
 
+const handleRePayment = async () => {
+  let now = new Date(currentDay.getTime() + 25 * 60000);
+  // Lấy thông tin ngày giờ sau khi cộng thêm
+  let day = now.getDate();
+  let month = now.getMonth() + 1;
+  let year = now.getFullYear();
+  let hour = now.getHours();
+  let minute = now.getMinutes();
+  let second = now.getSeconds();
+
+  // Định dạng ngày, tháng, giờ, phút, giây
+  let monthStr = month.toString().padStart(2, '0');
+  let dayStr = day.toString().padStart(2, '0');
+  let hourStr = hour.toString().padStart(2, '0');
+  let minuteStr = minute.toString().padStart(2, '0');
+  let secondStr = second.toString().padStart(2, '0');
+  const response = await paymentService.createPayment({
+    order_id: order.value.bill_id,
+    order_desc: "Thanh toán đơn hàng #" + order.value.bill_id,
+    order_type: "billpayment",
+    amount: order.value.total_cost,
+    language: "vn",
+    txtexpire: year + monthStr + dayStr + hourStr + minuteStr + secondStr,
+    txt_billing_mobile: address.value.phone,
+    txt_billing_email: Cookies.get("email"),
+    txt_billing_fullname: address.value.name,
+    txt_inv_addr1: address.value.address + ", " + address.value.commue + ", " + address.value.district + ", " + address.value.city,
+    txt_bill_city: address.value.city,
+    txt_bill_country: 'Việt Nam',
+    txt_inv_mobile: address.value.phone,
+    txt_inv_email: Cookies.get("email"),
+    txt_inv_customer: address.value.name,
+    cbo_inv_type: 'I'
+  })
+
+  if (response.code == '00') {
+    window.location.href = response.data;
+  }
+
+};
+
 const showCancelSuccess = () => {
   ElMessage({
     message: "Hủy dơn hàng thành công.",
@@ -283,7 +357,17 @@ const showCancelSuccess = () => {
 };
 
 onMounted(() => {
-  fetchOrder();
+  fetchOrder().then(() => {
+    const orderCreatedAt = new Date(order.value.created_at);
+    console.log('Order created at: ', orderCreatedAt);
+    const twentyMinutesLater = orderCreatedAt.getTime() + 11 * 60 * 1000;
+    console.log('Twenty minutes later: ', twentyMinutesLater);
+    lifetime.value = twentyMinutesLater;
+  });
+
+  console.log('User Id: ', userId);
+
+
 });
 const formatCurrency = (amount) => {
   return (

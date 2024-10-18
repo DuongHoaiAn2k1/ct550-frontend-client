@@ -49,7 +49,7 @@
                           <h6 class="small mb-0">
                             <a href="#" class="text-reset">{{
                               getProduct(data.product_id)?.product_name
-                              }}</a>
+                            }}</a>
                           </h6>
                           <span class="small">Giá:
                             {{
@@ -240,6 +240,7 @@ import paymentService from "../services/payment.service";
 import affiliateService from "../services/affiliate.service";
 
 const atob = (str) => window.atob(str);
+const orderGet = ref([]);
 const router = useRouter();
 const cartStore = useCartStore();
 const authStore = useAuthStore();
@@ -279,10 +280,6 @@ const checkStockAvailable = async (data) => {
   }
 }
 
-watch(payMethod, (newValvue) => {
-  // console.log("payMethod: ", newValvue);
-})
-
 const orderData = ref({});
 
 const fetchListProduct = async () => {
@@ -294,6 +291,18 @@ const fetchListProduct = async () => {
     console.log(error.response);
   }
 };
+
+const fetchOrder = async () => {
+  try {
+    const response = await orderService.getByBillId(Cookies.get("recentOrderBillId"));
+    orderGet.value = response.data;
+    console.log('Order Get: ', orderGet.value);
+    return response;
+  } catch (error) {
+    console.log(error.response);
+    throw error;
+  }
+}
 
 const fetchUserData = async () => {
   try {
@@ -413,7 +422,6 @@ const preprocessOrder = async () => {
         handleOrder("preparing");
       } else {
         let now = new Date(currentDay.getTime() + 25 * 60000);
-
         // Lấy thông tin ngày giờ sau khi cộng thêm
         let day = now.getDate();
         let month = now.getMonth() + 1;
@@ -447,8 +455,8 @@ const preprocessOrder = async () => {
           cbo_inv_type: 'I'
         })
 
-
         if (response.code == '00') {
+          Cookies.set("recentOrderBillId", bill_id.value);
           handleOrder('pending_payment').then(() => {
             handleDeleteCart();
             cartStore.deleteCart();
@@ -486,14 +494,15 @@ const handleOrder = async (status) => {
         ""
       );
     } else {
-      const [orderResponse, notificationResponse] = await Promise.all([
-        orderService.create(orderData.value),
-        notificationService.create({
-          message: 'Đơn hàng đã đặt thành công',
-          route_name: 'order',
-          type: 'admin'
-        })
-      ]);
+      // const [orderResponse, notificationResponse] = await Promise.all([
+      //   orderService.create(orderData.value),
+      //   notificationService.create({
+      //     message: 'Đơn hàng đã đặt thành công',
+      //     route_name: 'order',
+      //     type: 'admin'
+      //   })
+      // ]);
+      const orderResponse = await orderService.create(orderData.value);
       // Kiểm tra nếu tạo đơn hàng thành công
       if (orderResponse && orderResponse.order_id) {
         const order_id = orderResponse.order_id;
@@ -531,7 +540,9 @@ const handleOrder = async (status) => {
         }
 
         await userService.pointDecrement({ point_used: pointUsed.value });
-        orderService.sendOrderConfirmationEmail(order_id);
+        if (status == 'preparing') {
+          orderService.sendOrderConfirmationEmail(order_id);
+        }
         if (payMethod.value == 'cod') {
           const loadingNotification = showLoading();
           setTimeout(() => {
@@ -589,15 +600,24 @@ onMounted(() => {
   fetchUserData();
   fetchCurrentPoint();
   productStore.fetchListProduct();
+
   setTimeout(() => {
     handleTotal();
     handleCalculateShippingFee();
     console.log("Total Money: ", totalMoney);
     // console.log("Phi ship: ", calculateShippingFee(4));
+    fetchOrder().then(() => {
+      if (orderGet.value && orderGet.value.status == 'pending_payment') {
+        router.push({ name: 'order-detail', params: { id: orderGet.value.order_id } });
+      }
+    })
     setTimeout(() => {
       loading.close();
     }, 1000);
   }, 1000);
+
+
+  // console.log("Order Get : ", orderGet);
   // console.log(cartStore.addressToPay);
 });
 

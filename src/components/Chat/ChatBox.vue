@@ -40,9 +40,12 @@
                             </div>
 
                         </div>
-                        <div>
+                        <div class="d-flex">
                             <input v-model="messageSend" type="text" class="form-control" placeholder="Nhập nội dung..."
-                                @keyup.enter="handleCreateMessage">
+                                @keyup.enter="handleCreateMessage"><button @click="handleCreateMessage"
+                                class="btn btn-primary">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
                         </div>
                     </div>
 

@@ -113,7 +113,7 @@ import { showSuccessMessage } from "../../helpers/NotificationHelper";
 import { initializeEcho } from "../../pusher/echoConfig";
 import { useRouter } from "vue-router";
 const router = useRouter();
-
+const userId = computed(() => authStore.user_id);
 const echoInstance = initializeEcho();
 const categoryStore = useCategoryStore();
 const authStore = useAuthStore();
@@ -139,7 +139,7 @@ const handleLogOut = () => {
     }, 500);
 }
 
-echoInstance.channel('admin-channel')
+echoInstance.channel(`user-channel.${userId.value}`)
     .listen('.order.created', async (event) => {
         // const response = await notificationStore.getAll();
         console.log('Chanel');
@@ -147,8 +147,13 @@ echoInstance.channel('admin-channel')
 
     });
 
+echoInstance.channel(`user-channel.${userId.value}`)
+    .listen('.order.update.status', async (event) => {
+        await notificationStore.getByUser();
+    });
 
-echoInstance.channel('affiliate-approved').listen('.affiliate-approved', async (event) => {
+
+echoInstance.channel(`user-channel.${userId.value}`).listen('.affiliate-approved', async (event) => {
     console.log('Affiliate approved');
     const response = await notificationService.create({
         message: 'Yêu cầu tiếp thị của bạn đã được xét duyệt',
@@ -158,7 +163,7 @@ echoInstance.channel('affiliate-approved').listen('.affiliate-approved', async (
     await notificationStore.getByUser();
 });
 
-echoInstance.channel('affiliate-rejected').listen('.affiliate-rejected', async (event) => {
+echoInstance.channel(`user-channel.${userId.value}`).listen('.affiliate-rejected', async (event) => {
     await notificationStore.getByUser();
 });
 
