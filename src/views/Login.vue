@@ -87,7 +87,7 @@ import authService from "@/services/auth.service";
 import userService from "@/services/user.service";
 import { useRouter } from "vue-router";
 import { h } from "vue";
-import { showSuccess, showWarning } from "@/helpers/NotificationHelper";
+import { showSuccess, showSuccessMessage, showWarning } from "@/helpers/NotificationHelper";
 import { watch } from "vue";
 
 
@@ -150,7 +150,7 @@ const submitLogin = async (event) => {
           authStore.login(access_token, refresh_token, email, user_id, role);
           // Cookies.set("token", token, { expires: 1 });
           localStorage.setItem("requireLogin", false);
-          showSuccess("Đăng nhập thành công");
+          showSuccessMessage("Đăng nhập thành công");
           setTimeout(() => {
             router.push({ name: "home" });
           }, 1000);

@@ -59,7 +59,7 @@ import { showWarning } from "@/helpers/NotificationHelper";
 import userService from "@/services/user.service";
 import { h } from 'vue'
 import { ElNotification } from 'element-plus'
-
+const atob = (str) => window.atob(str);
 
 const authStore = useAuthStore();
 const cartStore = useCartStore();
@@ -126,22 +126,14 @@ const hanldeTotal = () => {
   number.value = 0;
   cartData.value.forEach((cart) => {
     number.value = number.value + cart.quantity;
-    var role = [];
-    role = productStore.getRoleProductPromotion(cart.product_id);
-    var currentProduct = productStore.getProductById(cart.product_id);
-    console.log("Current Product: ", currentProduct);
-    if (role.length != 0 && role.includes(Cookies.get('role'))) {
-      if (currentProduct.product_promotion.length != 0) {
-        total.value = total.value + (currentProduct.product_price - currentProduct.product_promotion[0].discount_price) * cart.quantity;
-      } else {
-        total.value = total.value + currentProduct.product_price * cart.quantity;
-      }
+    if (cart?.product && JSON.parse(cart?.product?.product_promotion[0]?.promotion?.user_group).includes(atob(Cookies.get('role')))) {
+
+      total.value = total.value + (cart.product.product_price - cart.product.product_promotion[0].discount_price) * cart.quantity;
     } else {
       total.value =
         total.value +
-        productStore.getProductPrice(cart.product_id) * cart.quantity;
+        cart.product.product_price * cart.quantity;
     }
-    console.log("Role: ", role);
 
   });
 

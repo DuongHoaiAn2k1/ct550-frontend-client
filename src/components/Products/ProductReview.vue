@@ -75,6 +75,9 @@ const props = defineProps({
         required: true
     }
 });
+
+const emit = defineEmits(["checkUserReviewProduct", "checkBuyingProduct"]);
+
 const rateComment = ref();
 const commentValue = ref("");
 const listCommentReview = ref([]);
@@ -98,8 +101,13 @@ const listCommentPagination = computed(() => {
 });
 
 const handleComment = () => {
-    createComment(props.productId, rateComment.value, commentValue.value);
-    showSuccess("Cảm ơn bạn đã đánh giá");
+    createComment(props.productId, rateComment.value, commentValue.value).then(() => {
+        fetchReviewByProduct();
+        showSuccess("Cảm ơn bạn đã đánh giá");
+        emit("checkUserReviewProduct");
+        emit("checkBuyingProduct");
+    });
+
 };
 
 const createComment = async (productId, rating, comment) => {
@@ -109,22 +117,12 @@ const createComment = async (productId, rating, comment) => {
             rating: rating,
             comment: comment,
         });
-        fetchReviewByProduct();
-        checkUserReviewProduct();
-        console.log(response);
-        console.log("Create comment: ", productId, rating, comment);
+        // console.log(response);
+        // console.log("Create comment: ", productId, rating, comment);
+        return response
     } catch (error) {
         console.log(error.response);
-    }
-};
-
-const checkUserReviewProduct = async () => {
-    try {
-        const response = await reviewService.userHasReviewedProduct(productId.value);
-        console.log("Check user review product: ", response);
-        isReviewProduct.value = response.data;
-    } catch (error) {
-        console.log(error.response);
+        throw error
     }
 };
 
@@ -140,6 +138,10 @@ const handleCurrentChange = (val) => {
 </script>
 
 <style scoped>
+:deep(.el-pagination .el-pager .is-active) {
+    background-color: black !important;
+}
+
 .mic-info {
     color: #999;
     font-size: 12px;

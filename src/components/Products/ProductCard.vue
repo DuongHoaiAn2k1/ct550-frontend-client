@@ -1,11 +1,13 @@
 <template>
-    <div class="card mx-2 col col-md-3 mb-3">
+    <div class="card mx-2 col-6 col-md-3 mb-3">
         <div class="image-container">
             <router-link :to="{ name: 'product-detail', params: { id: productId } }">
                 <img :src="image" />
             </router-link>
-            <div class="price">{{ product.product_promotion.length != 0 ? formatCurrency(price -
-                product.product_promotion[0].discount_price) : formatCurrency(product.product_price) }}</div>
+            <div class="price">{{ (product.product_promotion.length != 0 &&
+                JSON.parse(product.product_promotion[0].promotion.user_group).includes(atob(Cookies.get('role')))) ?
+                formatCurrency(price -
+                    product.product_promotion[0].discount_price) : formatCurrency(product.product_price) }}</div>
         </div>
         <label class="favorite">
             <input type="checkbox" :checked="liked" @click="handleCreateProductLike(productId)">
@@ -23,7 +25,8 @@
                 <span class="original-price">{{ formatCurrency(product.product_price) }}</span>
                 <span class="discount">-{{ product?.product_promotion[0]?.promotion?.discount_percentage }}%</span>
             </div>
-            <div v-show="product.product_promotion.length == 0" class="product-name">
+            <div v-show="product.product_promotion.length == 0 || !JSON.parse(product.product_promotion[0].promotion.user_group).includes(atob(Cookies.get('role')))"
+                class="product-name">
                 <span style="color: white;">0</span>
                 <span style="color: white;"> 0</span>
             </div>
@@ -434,5 +437,11 @@ onMounted(() => {
 
 :deep(.el-rate) {
     height: 16px !important;
+}
+
+@media only screen and (max-width: 768px) {
+    .card {
+        width: 220px;
+    }
 }
 </style>

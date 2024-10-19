@@ -6,6 +6,7 @@ export const useProductStore = defineStore("product", {
     listProduct: [],
     fishList: [],
     shrimpList: [],
+    shrimpCrackList: [],
   }),
   actions: {
     //Lay danh sach tat ca san  pham
@@ -25,6 +26,17 @@ export const useProductStore = defineStore("product", {
         });
         this.fishList = response.data.slice(0, 5);
         console.log("Cá: ", this.fishList);
+      } catch (error) {
+        console.log(error.response);
+      }
+    },
+    async fetchListShrimpCrack() {
+      try {
+        const response = await productService.getProductFromCategoryName({
+          category_name: "Bánh phồng tôm",
+        });
+        this.shrimpCrackList = response.data.slice(0, 5);
+        // console.log("Tắm: ", response);
       } catch (error) {
         console.log(error.response);
       }

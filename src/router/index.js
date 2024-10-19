@@ -17,6 +17,13 @@ const routes = [
     path: "/register",
     name: "register",
     component: () => import("@/views/Register.vue"),
+    beforeEnter : (to, from, next) => {
+      if(Cookies.get('isUserLoggedIn') == 'true'){ 
+        next('/');
+      } else {
+        next();
+      }
+    }
   },
   {
     path: "/login",
@@ -44,26 +51,61 @@ const routes = [
     path: "/profile",
     name: "profile",
     component: () => import("@/views/Profile.vue"),
+    beforeEnter : (to, from, next) => {
+      if(Cookies.get('isUserLoggedIn') == 'true'){ 
+        next();
+      } else {
+        next('/login');
+      }
+    }
   },
   {
     path: "/cart",
     name: "cart",
     component: () => import("@/views/Cart.vue"),
+    beforeEnter : (to, from, next) => {
+      if(Cookies.get('isUserLoggedIn') == 'true'){ 
+        next();
+      } else {
+        next('/login');
+      }
+    }
   },
   {
     path: "/tokenProcess",
     name: "token",
     component: () => import("@/helps/Token/TokenProcess.vue"),
+    beforeEnter : (to, from, next) => {
+      if(Cookies.get('isUserLoggedIn') == 'true'){ 
+        next();
+      } else {
+        next('/login');
+      }
+    }
   },
   {
     path: "/check-payment",
     name: "check-payment",
     component: () => import("@/helps/Payment/PaymentChecking.vue"),
+    beforeEnter : (to, from, next) => {
+      if(Cookies.get('isUserLoggedIn') == 'true'){ 
+        next();
+      } else {
+        next('/login');
+      }
+    }
   },
   {
     path: "/payment",
     name: "payment",
     component: () => import("@/views/Payment.vue"),
+    beforeEnter : (to, from, next) => {
+      if(Cookies.get('isUserLoggedIn') == 'true'){ 
+        next();
+      } else {
+        next('/login');
+      }
+    }
   },
   {
     path: "/order-detail/:id",
@@ -109,6 +151,13 @@ const routes = [
     path: "/affiliate",
     name: "affiliate",
     component: () => import("@/views/Affiliate.vue"),
+    beforeEnter : (to, from, next) => {
+      if(Cookies.get('isUserLoggedIn') == 'true'){ 
+        next();
+      } else {
+        next('/login');
+      }
+    }
   }
 ];
 

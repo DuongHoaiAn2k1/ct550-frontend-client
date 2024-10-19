@@ -20,8 +20,8 @@
                                 <!-- Nếu là tin nhắn của nhân viên -->
                                 <div v-if="message.sender_id != authStore.user_id"
                                     class="d-flex flex-row justify-content-start">
-                                    <img src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava1-bg.webp"
-                                        alt="avatar 1" style="width: 45px; height: 100%;">
+                                    <img src="../../../public/assets/images/admin/admin-img.png" alt="avatar 1"
+                                        style="width: 45px; height: 100%;">
                                     <div class="p-3 ms-3"
                                         style="border-radius: 15px; background-color: rgba(57, 192, 237, .2);">
                                         <p class="small mb-0">{{ message.message }}</p>
@@ -34,7 +34,7 @@
                                     <div class="p-3 me-3 border bg-body-tertiary" style="border-radius: 15px;">
                                         <p class="small mb-0">{{ message.message }}</p>
                                     </div>
-                                    <img src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava2-bg.webp"
+                                    <img :src="message.sender.avatar ? message.sender.avatarProps : message.sender.image ? apiUrl + message.sender.image : 'https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava2-bg.webp'"
                                         alt="avatar 1" style="width: 45px; height: 100%;">
                                 </div>
                             </div>
@@ -62,6 +62,7 @@ import { onMounted, ref, computed, watch } from "vue";
 import { useAuthStore } from "@/stores/auth";
 import { initializeEcho } from "../../pusher/echoConfig";
 import messageService from "@/services/message.service";
+import { avatarProps } from "element-plus";
 const messages = ref([]);
 const authStore = useAuthStore();
 const echoInstance = initializeEcho();
@@ -71,6 +72,7 @@ const countUnRead = ref(0);
 const props = defineProps({
     isChatVisible: Boolean,
 });
+const apiUrl = import.meta.env.VITE_APP_API_URL;
 
 const emit = defineEmits(['toggleChat']);
 

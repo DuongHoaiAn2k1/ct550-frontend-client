@@ -48,16 +48,16 @@
                         <div class="flex-lg-grow-1 ms-3">
                           <h6 class="small mb-0">
                             <a href="#" class="text-reset">{{
-                              getProduct(data.product_id)?.product_name
+                              data.product.product_name
                             }}</a>
                           </h6>
                           <span class="small">Giá:
                             {{
-                              getProduct(data.product_id)?.product_promotion.length > 0 &&
-                                JSON.parse(getProduct(data.product_id)?.product_promotion[0].promotion.user_group).includes(atob(Cookies.get('role')))
-                                ? formatCurrency(getProduct(data.product_id)?.product_price -
-                                  getProduct(data.product_id)?.product_promotion[0].discount_price) :
-                                formatCurrency(getProduct(data.product_id)?.product_price)
+                              data.product?.product_promotion.length > 0 &&
+                                JSON.parse(data.product?.product_promotion[0].promotion.user_group).includes(atob(Cookies.get('role')))
+                                ? formatCurrency(data.product?.product_price -
+                                  data.product?.product_promotion[0].discount_price) :
+                                formatCurrency(data.product?.product_price)
                             }}</span>
                         </div>
                       </div>
@@ -65,12 +65,12 @@
                     <td>x{{ data.quantity }}</td>
                     <td class="text-end">
                       {{
-                        getProduct(data.product_id)?.product_promotion.length > 0
+                        data.product?.product_promotion.length > 0
                           &&
-                          JSON.parse(getProduct(data.product_id)?.product_promotion[0]?.promotion.user_group).includes(atob(Cookies.get('role')))
-                          ? formatCurrency((getProduct(data.product_id)?.product_price -
-                            getProduct(data.product_id)?.product_promotion[0].discount_price) * data.quantity) :
-                          formatCurrency(getProduct(data.product_id)?.product_price * data.quantity)
+                          JSON.parse(data.product?.product_promotion[0]?.promotion.user_group).includes(atob(Cookies.get('role')))
+                          ? formatCurrency((data.product?.product_price -
+                            data.product?.product_promotion[0].discount_price) * data.quantity) :
+                          formatCurrency(data.product?.product_price * data.quantity)
                       }}
                     </td>
                   </tr>
@@ -362,8 +362,8 @@ const handleTotal = () => {
   number.value = 0;
   cartData.value.forEach((cart) => {
     // console.log("Cart: ", cart);
-    // console.log("Product: ", getProduct(cart.product_id).product_price);
-    totalWeight.value = totalWeight.value + getProduct(cart.product_id).weight * cart.quantity;
+    // console.log("Product: ", cart?.product?.product_price);
+    totalWeight.value = totalWeight.value + cart?.product?.weight * cart.quantity;
     number.value = number.value + cart.quantity;
     if (Cookies.get('affiliateUserId') && Cookies.get('productAffiliateId') && Cookies.get('productAffiliateId') == cart.product_id) {
       // handleCreateSale(cart.order_id, cart.quantity);
@@ -376,11 +376,11 @@ const handleTotal = () => {
     if (role?.includes(atob(Cookies.get('role')))) {
       totalMoney.value =
         totalMoney.value +
-        (getProduct(cart.product_id).product_price - getProduct(cart.product_id).product_promotion[0].discount_price) * cart.quantity;
+        (cart?.product?.product_price - cart?.product?.product_promotion[0].discount_price) * cart.quantity;
     } else {
       totalMoney.value =
         totalMoney.value +
-        getProduct(cart.product_id).product_price * cart.quantity;
+        cart?.product?.product_price * cart.quantity;
     }
   });
 
@@ -520,9 +520,9 @@ const handleOrder = async (status) => {
 
           var totalCostDetail = 0;
           if (role?.includes(atob(Cookies.get('role')))) {
-            totalCostDetail = (getProduct(item.product_id)?.product_price - getProduct(item.product_id)?.product_promotion[0]?.discount_price) * item.quantity
+            totalCostDetail = (item.product?.product_price - item.product?.product_promotion[0]?.discount_price) * item.quantity
           } else {
-            totalCostDetail = getProduct(item.product_id)?.product_price * item.quantity
+            totalCostDetail = item.product?.product_price * item.quantity
           }
           const orderDetailData = {
             order_id: order_id,
@@ -621,6 +621,14 @@ onMounted(() => {
   // console.log(cartStore.addressToPay);
 });
 
+watch(pointUsed, (newValue) => {
+  if (newValue) {
+    const loading = showLoading();
+    setTimeout(() => {
+      loading.close();
+    }, 500);
+  }
+})
 </script>
 
 <style>

@@ -16,7 +16,8 @@
           <div class="col-md-6"></div>
         </div>
         <ProductList :listProductByCategory="listProductByCategory" :formatCurrency="formatCurrency" />
-        <ProductReview :isReviewProduct="isReviewProduct" :isBuyingProduct="isBuyingProduct" :productId="productId" />
+        <ProductReview :isReviewProduct="isReviewProduct" :isBuyingProduct="isBuyingProduct" :productId="productId"
+          @checkUserReviewProduct="checkUserReviewProduct" @checkBuyingProduct="checkBuyingProduct" />
       </div>
     </div>
   </div>
@@ -140,7 +141,7 @@ onMounted(async () => {
       fetchProductByCategoryId();
 
       loading.value = false;
-    }, 500);
+    }, 600);
     if (Cookies.get("isUserLoggedIn") == "true") {
       checkUserReviewProduct();
     }

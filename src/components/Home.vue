@@ -27,6 +27,11 @@
       @handleCreateProductLike="handleCreateProductLike" />
   </div>
 
+  <div class="container">
+    <ProductTitleCard title="Bánh Phồng Tôm" :product="productStore.shrimpCrackList"
+      @handleCreateProductLike="handleCreateProductLike" />
+  </div>
+
   <div v-show="listProductByName.length != 0" class="container bg-trasparent mt-2" style="position: relative">
     <p style="margin-bottom: 0px; font-weight: 600">KẾT QUẢ TÌM KIẾM</p>
     <div v-show="!loading" class="row row-cols-1 row-cols-xs-2 row-cols-sm-2 row-cols-lg-5 g-3">
@@ -176,6 +181,7 @@ onMounted(async () => {
   }
   await productStore.fetchListFish();
   await productStore.fetchListShrimp()
+  await productStore.fetchListShrimpCrack();
 
   if (searchStore.dataSearch) {
     fetchProductFromName(searchStore.dataSearch);

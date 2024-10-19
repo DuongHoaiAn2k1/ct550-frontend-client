@@ -1,5 +1,5 @@
 <template>
-    <div class="row" v-show="!loading">
+    <div class="row" v-show="!loading" v-if="product">
         <div class="col-lg-4 order-lg-1 order-2">
             <div class="container">
                 <div id="carouselExampleControls" class="carousel slide" data-bs-ride="carousel">
@@ -33,10 +33,24 @@
                     {{ product.product_name }}
                 </div>
                 <div>
-                    <span class="product_price">{{ formatCurrency(product.product_price) }}</span>
+                    <span class="product_price">
+                        {{ product.product_promotion && product.product_promotion.length > 0 &&
+                            JSON.parse(product.product_promotion[0].promotion.user_group).includes(atob(Cookies.get('role')))
+                            ? formatCurrency(product.product_price - product.product_promotion[0].discount_price)
+                            : formatCurrency(product.product_price) }}
+                    </span>
+
+                    <span
+                        v-show="product.product_promotion && product.product_promotion.length > 0 &&
+                            JSON.parse(product.product_promotion[0].promotion.user_group).includes(atob(Cookies.get('role')))"
+                        class="ms-1 original-price">{{ formatCurrency(product.product_price) }}</span>
+                    <span
+                        v-show="product.product_promotion && product.product_promotion.length > 0 &&
+                            JSON.parse(product.product_promotion[0].promotion.user_group).includes(atob(Cookies.get('role')))"
+                        class="ms-2 discount">-{{ product.product_promotion[0].promotion.discount_percentage }}%</span>
                 </div>
                 <p class="text-muted mb-0">
-                    <el-rate v-model="averageRating
+                    <el-rate v-model="product.average_rating
                         " disabled show-score text-color="#ff9900" score-template="{value} points" />
                 </p>
                 <div>
@@ -92,9 +106,11 @@
 </template>
 
 <script setup>
+import Cookies from 'js-cookie';
 import { onMounted, ref } from 'vue';
 import { toRefs } from 'vue';
-
+const atob = (str) => window.atob(str);
+const productPrice = ref(0);
 const averageRating = ref(0);
 const props = defineProps({
     product: Object,
@@ -152,11 +168,22 @@ const emit = defineEmits([
 
 onMounted(() => {
     averageRating.value = props.product.average_rating || 0;
-    console.log("props in product detail: ", props);
 })
 </script>
 
 <style scoped>
+.original-price {
+    text-decoration: line-through;
+    /* Gạch ngang giá ban đầu */
+    color: red;
+    /* Bạn có thể chọn màu khác nếu muốn */
+}
+
+.product-name .discount {
+    color: green;
+    /* Màu chữ cho mức giảm giá */
+}
+
 .product_info {
     font-size: 16px;
     line-height: 24px;

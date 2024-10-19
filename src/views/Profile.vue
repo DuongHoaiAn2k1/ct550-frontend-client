@@ -58,114 +58,116 @@
         <hr />
         <div class="contain-list-order">
           <div class="tab-content contain-list-order-child">
-            <div class="tab-pane active show" id="tasks-tab" role="tabpanel">
+            <div class="tab-pane px-3 active show" id="tasks-tab" role="tabpanel" style="min-height: 460px;">
               <h4 class="card-title mb-4 design-fontweight-600">Đơn hàng của bạn</h4>
-              <el-scrollbar height="400px">
-                <div v-show="orderStore.listOrder.length" class="row order-item" v-for="data in orderStore.listOrder"
-                  :key="data.order_id">
-                  <div class="col-xl-12">
-                    <div class="task-list-box" id="comp-task">
-                      <div id="task-item-4">
-                        <div class="task-box rounded-3">
-                          <div class="card-body">
-                            <div class="row align-item-center">
-                              <div class="">Mã đơn hàng:</div>
-                            </div>
-                            <div class="row align-items-center">
-                              <div class="col-xl-3 col-md-6">
-                                <div class="font-size-15">
-                                  <label class="form-check-label task-title" for="customChat">#{{ data.bill_id
-                                    }}</label>
-                                </div>
-                              </div>
-                              <!-- end col -->
-                              <div class="col-xl-9 col-md-6">
-                                <div class="row align-items-center">
-                                  <div class="col-2 detail-off">
-                                    <div class="avatar-group mt-3 mt-xl-0 task-assigne">
-                                      <div class="avatar-group-item">
-                                        <a href="javascript: void(0);" class="d-inline-block" data-bs-toggle="tooltip"
-                                          data-bs-placement="top" value="member-3" aria-label="Annmarie Paul"
-                                          data-bs-original-title="Annmarie Paul">
-                                          <img
-                                            :src="apiUrl + JSON.parse((data?.order_detail)[0]?.product?.product_img)[0]"
-                                            alt="" class=" rounded-circle
-                                            avatar-sm" />
-                                        </a>
-                                      </div>
-                                    </div>
-                                    <!-- end avatar group -->
-                                  </div>
-
-                                  <div class="col-xl-2 col-md-6 detail-on">
-                                    {{ formatCurrency(data.total_cost) }}
-                                  </div>
-                                  <div class="col-2 detail-off">
-                                    {{ convertTime(data.created_at) }}
-                                  </div>
-                                  <!-- end col -->
-                                  <div class="col-3 detail-off">
-                                    <div class="d-flex flex-wrap gap-3 mt-3 mt-xl-0 justify-content-md-end">
-                                      <div>
-                                        <span v-show="data.status == 'payment_failed'"
-                                          class="badge rounded-pill text-danger font-size-11 task-status">Thanh toán
-                                          thất bại</span>
-                                        <span v-show="data.status == 'pending_payment'"
-                                          class="badge rounded-pill text-warning font-size-11 task-status">Chờ thanh
-                                          toán</span>
-                                        <span v-show="data.status == 'preparing'"
-                                          class="badge rounded-pill text-info font-size-11 task-status">Đang chuẩn
-                                          bị</span>
-                                        <span v-show="data.status == 'shipping'"
-                                          class="badge rounded-pill orange font-size-11 task-status">Đang giao</span>
-                                        <span v-show="data.status == 'delivered'"
-                                          class="badge rounded-pill text-success font-size-11 task-status">Đã
-                                          giao</span>
-                                        <span v-show="data.status == 'cancelled'"
-                                          class="badge rounded-pill red font-size-11 task-status">Đã hủy</span>
-                                      </div>
-
-                                      <div>
-                                        <a href="#" class="mb-0 text-muted fw-medium" data-bs-toggle="modal"
-                                          data-bs-target=".bs-example-new-task"><i
-                                            class="mdi mdi-square-edit-outline font-size-16 align-middle"
-                                            onclick="editTask('task-item-4')"></i></a>
-                                      </div>
-                                      <div>
-                                        <a href="#" class="delete-item" onclick="deleteProjects('task-item-4')">
-                                          <i
-                                            class="mdi mdi-trash-can-outline font-size-16 align-middle text-danger"></i>
-                                        </a>
-                                      </div>
-                                    </div>
-                                  </div>
-
-                                  <div class="col-xl-3 col-md-6 detail-on">
-                                    <router-link :to="{
-                                      name: 'order-detail',
-                                      params: { id: data.order_id },
-                                    }">Xem chi tiết</router-link>
-                                  </div>
-                                  <!-- end col -->
-                                </div>
-                                <!-- end row -->
-                              </div>
-                              <!-- end col -->
-                            </div>
-                            <!-- end row -->
+              <!-- <el-scrollbar height="400px"> -->
+              <div v-show="orderStore.listOrder.length" class="row order-item" v-for="data in paginatedOrderList"
+                :key="data.order_id">
+                <div class="col-xl-12 p-0">
+                  <div class="task-list-box" id="comp-task">
+                    <div id="task-item-4">
+                      <div class="task-box rounded-3">
+                        <div class="card-body">
+                          <div class="row align-item-center">
+                            <div class="">Mã đơn hàng:</div>
                           </div>
-                          <!-- end cardbody -->
+                          <div class="row align-items-center">
+                            <div class="col-xl-3 col-md-6">
+                              <div class="font-size-15">
+                                <label class="form-check-label task-title" for="customChat">#{{ data.bill_id
+                                  }}</label>
+                              </div>
+                            </div>
+                            <!-- end col -->
+                            <div class="col-xl-9 col-md-6">
+                              <div class="row align-items-center">
+                                <div class="col-2 detail-off">
+                                  <div class="avatar-group mt-3 mt-xl-0 task-assigne">
+                                    <div class="avatar-group-item">
+                                      <a href="javascript: void(0);" class="d-inline-block" data-bs-toggle="tooltip"
+                                        data-bs-placement="top" value="member-3" aria-label="Annmarie Paul"
+                                        data-bs-original-title="Annmarie Paul">
+                                        <img
+                                          :src="apiUrl + JSON.parse((data?.order_detail)[0]?.product?.product_img)[0]"
+                                          alt="" class=" rounded-circle
+                                            avatar-sm" />
+                                      </a>
+                                    </div>
+                                  </div>
+                                  <!-- end avatar group -->
+                                </div>
+
+                                <div class="col-xl-2 col-md-6 detail-on">
+                                  {{ formatCurrency(data.total_cost) }}
+                                </div>
+                                <div class="col-2 detail-off">
+                                  {{ convertTime(data.created_at) }}
+                                </div>
+                                <!-- end col -->
+                                <div class="col-3 detail-off">
+                                  <div class="d-flex flex-wrap gap-3 mt-3 mt-xl-0 justify-content-md-end">
+                                    <div>
+                                      <span v-show="data.status == 'payment_failed'"
+                                        class="badge rounded-pill text-danger font-size-11 task-status">Thanh toán
+                                        thất bại</span>
+                                      <span v-show="data.status == 'pending_payment'"
+                                        class="badge rounded-pill text-warning font-size-11 task-status">Chờ thanh
+                                        toán</span>
+                                      <span v-show="data.status == 'preparing'"
+                                        class="badge rounded-pill text-info font-size-11 task-status">Đang chuẩn
+                                        bị</span>
+                                      <span v-show="data.status == 'shipping'"
+                                        class="badge rounded-pill orange font-size-11 task-status">Đang giao</span>
+                                      <span v-show="data.status == 'delivered'"
+                                        class="badge rounded-pill text-success font-size-11 task-status">Đã
+                                        giao</span>
+                                      <span v-show="data.status == 'cancelled'"
+                                        class="badge rounded-pill red font-size-11 task-status">Đã hủy</span>
+                                    </div>
+
+                                    <div>
+                                      <a href="#" class="mb-0 text-muted fw-medium" data-bs-toggle="modal"
+                                        data-bs-target=".bs-example-new-task"><i
+                                          class="mdi mdi-square-edit-outline font-size-16 align-middle"
+                                          onclick="editTask('task-item-4')"></i></a>
+                                    </div>
+                                    <div>
+                                      <a href="#" class="delete-item" onclick="deleteProjects('task-item-4')">
+                                        <i class="mdi mdi-trash-can-outline font-size-16 align-middle text-danger"></i>
+                                      </a>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                <div class="col-xl-3 col-md-6 detail-on">
+                                  <router-link :to="{
+                                    name: 'order-detail',
+                                    params: { id: data.order_id },
+                                  }">Xem chi tiết</router-link>
+                                </div>
+                                <!-- end col -->
+                              </div>
+                              <!-- end row -->
+                            </div>
+                            <!-- end col -->
+                          </div>
+                          <!-- end row -->
                         </div>
-                        <!-- end card -->
+                        <!-- end cardbody -->
                       </div>
+                      <!-- end card -->
                     </div>
                   </div>
                 </div>
-                <div v-show="!orderStore.listOrder.length" class="text-center">
-                  Bạn chưa có đơn hàng nào!
-                </div>
-              </el-scrollbar>
+              </div>
+              <div v-show="!orderStore.listOrder.length" class="text-center">
+                Bạn chưa có đơn hàng nào!
+              </div>
+              <!-- </el-scrollbar> -->
             </div>
+            <el-pagination v-model:current-page="currentOrderPage" @current-change="handleOrderCurrentChange" background
+              layout="prev, pager, next" :total="Math.ceil(orderStore.listOrder.length / pageSize) * 10" class="mt-4"
+              size="small" />
           </div>
         </div>
       </div>
@@ -370,7 +372,7 @@
                     </thead>
 
                     <tbody>
-                      <tr v-for="(data, index) in paginatedList" :key="data.favorite_id">
+                      <tr v-for="(data, index) in paginatedFavoriteList" :key="data.favorite_id">
                         <th scope="row" style="color: #666666">
                           {{ index + 1 }}
                         </th>
@@ -402,9 +404,9 @@
                     <span v-show="favoriteStore.length == 0" style="font-size: 20px;"> Không có sản phẩm nào</span>
                   </div>
                   <div class="text-end">
-                    <el-pagination v-model:current-page="currentPage" @current-change="handleCurrentChange" small
-                      background layout="prev, pager, next" :total="Math.ceil(favoriteStore.length / pageSize) * 10"
-                      class="mt-4" />
+                    <el-pagination v-model:current-page="currentFavoritePage"
+                      @current-change="handleFavoriteCurrentChange" small background layout="prev, pager, next"
+                      :total="Math.ceil(favoriteStore.length / pageSize) * 10" class="mt-4" />
                   </div>
                 </div>
               </div>
@@ -578,8 +580,9 @@ const userData = ref({});
 const nameUser = ref("");
 const imageUpdate = ref("");
 const listAddressUser = ref([]);
-const currentPage = ref(1);
-const pageSize = 4;
+const currentOrderPage = ref(1);
+const currentFavoritePage = ref(1);
+const pageSize = 5;
 // Define some value for hanlde Update Password
 const newPass = ref("");
 const oldPass = ref("");
@@ -1004,15 +1007,24 @@ watchEffect(() => {
   }
 });
 
-const handleCurrentChange = (val) => {
-  currentPage.value = val;
+const handleFavoriteCurrentChange = (val) => {
+  currentFavoritePage.value = val;
   console.log(`current page: ${val}`);
 };
 
-const paginatedList = computed(() => {
-  const startIndex = (currentPage.value - 1) * pageSize;
+const handleOrderCurrentChange = (val) => {
+  currentOrderPage.value = val;
+}
+
+const paginatedFavoriteList = computed(() => {
+  const startIndex = (currentFavoritePage.value - 1) * pageSize;
   return favoriteStore.listFavorite.slice(startIndex, startIndex + pageSize);
 });
+
+const paginatedOrderList = computed(() => {
+  const startIndex = (currentOrderPage.value - 1) * pageSize;
+  return orderStore.listOrder.slice(startIndex, startIndex + pageSize);
+})
 </script>
 
 <style scoped>
@@ -1189,6 +1201,7 @@ const paginatedList = computed(() => {
 /* My design */
 .contain-list-order {
   border-style: groove;
+  margin-bottom: 4px;
 }
 
 .contain-list-order-child {
