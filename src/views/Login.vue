@@ -222,11 +222,11 @@ const handleResetPassword = () => {
 
 
 const loginWithGoogle = () => {
-  const googleLoginUrl = 'https://dacsancamau.com/api/auth/google';
+  const googleLoginUrl = 'https://luanvantotnghiep.io.vn:8443/api/auth/google';
   const newWindow = window.open(googleLoginUrl, '_blank', 'width=500,height=600');
 
   window.addEventListener('message', (event) => {
-    if (event.origin === 'https://dacsancamau.com') {
+    if (event.origin === 'https://luanvantotnghiep.io.vn:8443') {
       const { access_token, refresh_token, user_id, email, role, google_id, affiliate_role } = event.data;
       newWindow.close();
       if (google_id != null) {
