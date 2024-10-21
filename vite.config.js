@@ -13,11 +13,15 @@ export default defineConfig({
     },
   },
   server: {
-    host: 'localhost',
+    host: 'client.dacsancamau.com',
     port: 3001,
+    https: {
+      key: fs.readFileSync(path.resolve(__dirname, 'ssl/selfsigned.key')),
+      cert: fs.readFileSync(path.resolve(__dirname, 'ssl/selfsigned.crt')),
+    },
     proxy: {
       "/api": {
-        target: "https://luanvantotnghiep.io.vn:8443",
+        target: "https://dacsancamau.com/",
         changeOrigin: true,
         secure: false,
       },

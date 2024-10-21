@@ -32,56 +32,6 @@
       @handleCreateProductLike="handleCreateProductLike" />
   </div>
 
-  <div v-show="listProductByName.length != 0" class="container bg-trasparent mt-2" style="position: relative">
-    <p style="margin-bottom: 0px; font-weight: 600">KẾT QUẢ TÌM KIẾM</p>
-    <div v-show="!loading" class="row row-cols-1 row-cols-xs-2 row-cols-sm-2 row-cols-lg-5 g-3">
-      <div class="col hp" v-for="product in listProductByName" :key="product.product_id">
-        <div class="card h-100 shadow-sm">
-          <router-link :to="{ name: 'product-detail', params: { id: product.product_id } }">
-            <img :src="apiUrl +
-              JSON.parse(product.product_img)[0]
-              " class="card-img-top" alt="product.title" />
-          </router-link>
-          <p v-show="product.product_quantity == 0" class="out-of-stock">
-            Hết Hàng
-          </p>
-          <!-- <div class="label-top shadow-sm">
-              <a class="text-white" href="#">asus</a>
-            </div> -->
-          <div class="card-body">
-            <h5 style="margin-bottom: 0px" class="card-title">
-              <p class="name-product">{{ product.product_name }}</p>
-              <p style="margin-bottom: 0px !important; font-weight: 600" class="mt-2 text-danger text-end">
-                {{ formatCurrency(product.product_price) }}/kg
-              </p>
-            </h5>
-
-            <div class="d-grid gap-2">
-              <a v-show="product.product_quantity != 0" @click="addToCart(product.product_id, product.weight)"
-                class="btn btn-warning bold-btn">Thêm</a>
-              <a v-show="product.product_quantity == 0" class="btn btn-warning bold-btn">Thêm</a>
-            </div>
-            <div class="clearfix mt-1">
-              <span class="float-end" v-show="!product.liked" @click="createFavorite(product.product_id)">
-                <i class="fa-regular fa-heart" style="cursor: pointer; font-size: 24px"></i>
-              </span>
-              <span class="float-end" v-show="product.liked" @click="deleteFavorite(product.product_id)">
-                <i class="fa-solid fa-heart" style="cursor: pointer; font-size: 24px"></i>
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="text-center my-5">
-      <div class="v-spinner" v-show="loading">
-        <div class="v-pulse v-pulse1" :style="[spinnerStyle, spinnerDelay1]"></div>
-        <div class="v-pulse v-pulse2" :style="[spinnerStyle, spinnerDelay2]"></div>
-        <div class="v-pulse v-pulse3" :style="[spinnerStyle, spinnerDelay3]"></div>
-      </div>
-    </div>
-  </div>
 </template>
 
 <script setup>
@@ -116,40 +66,8 @@ const cartStore = useCartStore();
 const authStore = useAuthStore();
 const searchStore = useSearchStore();
 
-const listProductByName = ref([]);
 
-const fetchProductFromName = async (data) => {
-  try {
-    const response = await productService.getProductByName({
-      product_name: data,
-    });
-    listProductByName.value = response.data;
-    console.log("Product By Name: ", listProductByName);
-  } catch (error) {
-    console.log(error.response);
-  }
-};
-const deleteFavorite = async (productId) => {
-  try {
-    const response = await favoriteService.delete(productId);
-    showSuccess("Đã loại bỏ khỏi danh sách yêu thích");
-    await productStore.fetchListFish();
-    await productStore.fetchListShrimp()
-  } catch (error) {
-    console.log(error.response);
-  }
-};
 
-const createFavorite = async (productId) => {
-  try {
-    const response = await favoriteService.create({ product_id: productId });
-    showSuccess("Thêm vào danh sách yêu thích thành công");
-    await productStore.fetchListFish();
-    await productStore.fetchListShrimp()
-  } catch (error) {
-    console.log(error.response);
-  }
-};
 
 const handleCreateProductLike = async (productId) => {
   try {
@@ -190,40 +108,8 @@ onMounted(async () => {
     await cartStore.fetchCartCount();
 
   }
-  // setTimeout(() => {
-  //   // updateFishListWithLikes();
-  //   // updateShrimpListWithLikes();
-  //   loading.value = false;
-  //   // console.log("List fish after update likes: ", productStore.fishList);
-  // }, 3000);
 
 });
-const addToCart = async (product_id, weight) => {
-  if (authStore.isUserLoggedIn) {
-    try {
-      const user_id = authStore.user_id;
-      const response = await cartService.create({
-        user_id: user_id,
-        product_id: product_id,
-        quantity: 1,
-        total_weight: weight,
-      });
-      await cartStore.fetchCartCount();
-      console.log("Ket qua them: ", response);
-      showSuccess("Them vào giỏ hàng thành công");
-    } catch (error) {
-      console.log(error.response);
-      if (error.response.data.message === "Qúa số lượng cho phép") {
-        showWarning("Đã quá số lượng cho phép");
-      }
-    }
-  } else {
-    showWarning("Vui lòng đăng nhập để tiến hành mua sản phẩm");
-    setTimeout(() => {
-      router.push({ name: "login" });
-    }, 500);
-  }
-};
 
 </script>
 

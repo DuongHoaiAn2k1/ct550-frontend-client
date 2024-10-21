@@ -1,13 +1,12 @@
 import { useAuthStore } from "@/stores/auth";
 import { useCartStore } from "@/stores/cart";
 import cartService from "@/services/cart.service";
-import {useRouter} from "vue-router";
+import router from "@/router";
 import { showSuccess, showWarning } from "@/helpers/NotificationHelper";
 
 
 const authStore = useAuthStore();
 const cartStore = useCartStore();
-const router = useRouter();
 
 const addToCart = async (product_id, weight) => {
     if (authStore.isUserLoggedIn) {
@@ -29,10 +28,7 @@ const addToCart = async (product_id, weight) => {
         }
       }
     } else {
-      warning();
-      setTimeout(() => {
-        router.push({ name: "login" });
-      }, 500);
+      router.push({ name: "login" });
     }
   };
 

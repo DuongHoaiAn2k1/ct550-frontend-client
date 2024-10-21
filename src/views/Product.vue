@@ -11,18 +11,16 @@
     <p class="text-center" style="margin-bottom: 0px; font-weight: 600; font-size: 24px">
       {{ categoryName }}
     </p>
-    <div v-show="!loading">
-      <div class="product-title-card">
-        <div class="row">
-          <ProductCard v-for="product in listProduct" :key="product.product_id" :price="product.product_price"
-            :productName="product.product_name" :productId="product.product_id" :product="product"
-            :image="apiUrl + JSON.parse(product.product_img)[0]" :liked.sync="product.liked"
-            @handleCreateProductLike="handleCreateProductLike" />
-        </div>
-        <!-- <p v-show="product.product_quantity == 0" class="out-of-stock">
+    <div v-show="!loading" class="product-title-card">
+      <div class="row">
+        <ProductCard v-for="product in listProduct" :key="product.product_id" :price="product.product_price"
+          :productName="product.product_name" :productId="product.product_id" :product="product"
+          :image="apiUrl + JSON.parse(product.product_img)[0]" :liked.sync="product.liked"
+          @handleCreateProductLike="handleCreateProductLike" />
+      </div>
+      <!-- <p v-show="product.product_quantity == 0" class="out-of-stock">
             Hết Hàng
           </p> -->
-      </div>
     </div>
     <div class="text-center my-5">
       <LoadingSpinner :loading="loading" :spinnerStyle="spinnerStyle" :spinnerDelay1="spinnerDelay1"
@@ -32,11 +30,11 @@
 </template>
 
 <script setup>
+import ProductCard from "../components/Products/ProductCard.vue";
 import "../assets/css/PulseLoader.css";
 import { computed, onMounted, ref, watch } from "vue";
 import usePulseLoader from "../assets/js/PulseLoader.js";
 import Category from "../components/Categories/Category.vue";
-import ProductCard from "../components/Products/ProductCard.vue";
 import LoadingSpinner from "@/components/Products/LoadingSpinner.vue";
 import { useCategoryStore } from "@/stores/category";
 import { useRoute } from "vue-router";

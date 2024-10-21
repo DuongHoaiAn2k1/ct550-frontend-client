@@ -34,20 +34,16 @@
                 </div>
                 <div>
                     <span class="product_price">
-                        {{ product.product_promotion && product.product_promotion.length > 0 &&
-                            JSON.parse(product.product_promotion[0].promotion.user_group).includes(atob(Cookies.get('role')))
+                        {{ product?.product_promotion
                             ? formatCurrency(product.product_price - product.product_promotion[0].discount_price)
                             : formatCurrency(product.product_price) }}
                     </span>
 
-                    <span
-                        v-show="product.product_promotion && product.product_promotion.length > 0 &&
-                            JSON.parse(product.product_promotion[0].promotion.user_group).includes(atob(Cookies.get('role')))"
-                        class="ms-1 original-price">{{ formatCurrency(product.product_price) }}</span>
-                    <span
-                        v-show="product.product_promotion && product.product_promotion.length > 0 &&
-                            JSON.parse(product.product_promotion[0].promotion.user_group).includes(atob(Cookies.get('role')))"
-                        class="ms-2 discount">-{{ product.product_promotion[0].promotion.discount_percentage }}%</span>
+                    <span v-show="product.product_promotion" class="ms-1 original-price">{{
+                        formatCurrency(product.product_price) }}</span>
+                    <span v-show="product.product_promotion"
+                        v-if="product.product_promotion && product.product_promotion[0]" class="ms-2 discount">-{{
+                            product.product_promotion[0].promotion.discount_percentage }}%</span>
                 </div>
                 <p class="text-muted mb-0">
                     <el-rate v-model="product.average_rating
