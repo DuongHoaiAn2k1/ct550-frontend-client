@@ -3,7 +3,7 @@ import axios from 'axios';
 class SearchService {
     constructor() {
         this.apiClient = axios.create({
-            baseURL: 'http://localhost:8001/api',
+            baseURL: 'http://103.188.82.134:8001/api',
             headers: {
                 'Content-Type': 'application/json',
             },
