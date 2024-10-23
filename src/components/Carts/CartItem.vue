@@ -3,7 +3,7 @@
         <div class="row align-items-start border-bottom pb-3">
             <div class="col-md-7 d-flex">
                 <div class="me-4">
-                    <img alt="" :src="apiUrl + productImg" class="avatar-lg rounded" />
+                    <img alt="" :src="apiUrl + JSON.parse(cart?.product.product_img)[0]" class="avatar-lg rounded" />
                 </div>
                 <div class="flex-grow-1 align-self-center overflow-hidden">
                     <div>
@@ -77,14 +77,19 @@
 <script setup>
 import { onMounted, ref } from 'vue';
 import { formatCurrency } from '@/helpers/UtilHelper';
-import Cookies from 'js-cookie';
-import productService from '../../services/product.service';
+import { showLoading } from "../../helpers/LoadingHelper";
 
 const apiUrl = import.meta.env.VITE_APP_API_URL;
 const product = ref({});
-const productImg = ref("");
 const props = defineProps({
     cart: Object,
+});
+
+onMounted(() => {
+    const loading = showLoading();
+    setTimeout(() => {
+        loading.close();
+    }, 500);
 });
 
 
