@@ -2,13 +2,14 @@ import { defineStore } from "pinia";
 import cartService from "@/services/cart.service";
 export const useCartStore = defineStore("cart", {
   state: () => ({
-    addressToPay: 0,
+    addressToPay: localStorage.getItem("addressToPay") || 0,
     count: 0,
   }),
 
   actions: {
     setAddress(index) {
       this.addressToPay = index;
+      localStorage.setItem("addressToPay", index);
     },
     async fetchCartCount() {
       try {
