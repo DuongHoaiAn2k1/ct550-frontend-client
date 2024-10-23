@@ -81,17 +81,12 @@ import Cookies from 'js-cookie';
 import productService from '../../services/product.service';
 
 const apiUrl = import.meta.env.VITE_APP_API_URL;
-const atob = (str) => window.atob(str);
 const product = ref({});
 const productImg = ref("");
-const promotionUser = ref([]);
 const props = defineProps({
     cart: Object,
 });
 
-onMounted(() => {
-    fetchProductDetail();
-});
 
 </script>
 
