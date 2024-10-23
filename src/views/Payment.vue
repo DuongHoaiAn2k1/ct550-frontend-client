@@ -49,7 +49,7 @@
                           <h6 class="small mb-0">
                             <a href="#" class="text-reset">{{
                               data.product.product_name
-                            }}</a>
+                              }}</a>
                           </h6>
                           <span class="small">Giá:
                             {{
@@ -89,15 +89,6 @@
                       {{ formatCurrency(shippingFee) }}
                     </td>
                   </tr>
-                  <!-- <tr>
-                    <td colspan="2">
-                      Hỗ trợ phí ship từ cửa hàng
-                      <span class="text-danger">(-30%)</span>
-                    </td>
-                    <td class="text-danger text-end">
-                      -{{ formatCurrency(calculateShippingFee(number) * 0.3) }}
-                    </td>
-                  </tr> -->
                   <tr>
                     <td colspan="2">Điểm sử dụng</td>
                     <td class="text-end text-danger">
@@ -234,11 +225,9 @@ import userService from "@/services/user.service";
 import shippingService from "../services/shipping.service";
 import order_detailService from "@/services/order_detail.service";
 import batchService from "../services/batch.service";
-import notificationService from "../services/notification.service";
 import paymentService from "../services/payment.service";
 import affiliateService from "../services/affiliate.service";
 
-const atob = (str) => window.atob(str);
 const orderGet = ref([]);
 const router = useRouter();
 const cartStore = useCartStore();
@@ -310,8 +299,11 @@ const fetchUserData = async () => {
     ListAddressOrder.value = JSON.parse(response.data.address);
     addressOrder.value = ListAddressOrder.value[cartStore.addressToPay];
     // console.log("user data: ", ListAddressOrder);
+    return response;
   } catch (error) {
     console.log(error.response);
+
+    throw error;
   }
 };
 
@@ -320,8 +312,10 @@ const fetchCartData = async () => {
     const response = await cartService.get();
     cartData.value = response.data;
     // console.log('Cart Data: ', cartData);
+    return response;
   } catch (error) {
     console.log(error.response);
+    throw error;
   }
 };
 
@@ -360,19 +354,14 @@ const handleTotal = () => {
   totalWeight.value = 0;
   number.value = 0;
   cartData.value.forEach((cart) => {
-    // console.log("Cart: ", cart);
-    // console.log("Product: ", cart?.product?.product_price);
     totalWeight.value = totalWeight.value + cart?.product?.weight * cart.quantity;
     number.value = number.value + cart.quantity;
     if (Cookies.get('affiliateUserId') && Cookies.get('productAffiliateId') && Cookies.get('productAffiliateId') == cart.product_id) {
       // handleCreateSale(cart.order_id, cart.quantity);
       affiliateProductQuantity.value = cart.quantity;
     }
-    var role = [];
-    role = productStore.getRoleProductPromotion(cart.product_id);
-    // console.log("Current Product: ", currentProduct);
-    // console.log("Role: ", role);
-    if (role?.includes(atob(Cookies.get('role')))) {
+
+    if (cart.product.product_promotion && cart.product.product_promotion.length > 0) {
       totalMoney.value =
         totalMoney.value +
         (cart?.product?.product_price - cart?.product?.product_promotion[0].discount_price) * cart.quantity;
@@ -470,6 +459,7 @@ const preprocessOrder = async () => {
 
 const handleOrder = async (status) => {
   try {
+    // Chuẩn bị dữ liệu đơn hàng
     orderData.value.bill_id = bill_id;
     orderData.value.status = status;
     orderData.value.name = addressOrder.value.name;
@@ -478,11 +468,10 @@ const handleOrder = async (status) => {
     orderData.value.commue = addressOrder.value.commue;
     orderData.value.district = addressOrder.value.district;
     orderData.value.city = addressOrder.value.city;
-    orderData.value.paid = false;
+    orderData.value.paid = false;  // Cập nhật giá trị thanh toán
     orderData.value.shipping_fee = shippingFee.value;
     orderData.value.total_cost =
-      totalMoney.value -
-      pointUsed.value * 1000 + shippingFee.value;
+      totalMoney.value - pointUsed.value * 1000 + shippingFee.value;
     orderData.value.pay_method = payMethod.value;
     orderData.value.point_used_order = pointUsed.value;
 
@@ -493,63 +482,48 @@ const handleOrder = async (status) => {
         ""
       );
     } else {
-      // const [orderResponse, notificationResponse] = await Promise.all([
-      //   orderService.create(orderData.value),
-      //   notificationService.create({
-      //     message: 'Đơn hàng đã đặt thành công',
-      //     route_name: 'order',
-      //     type: 'admin'
-      //   })
-      // ]);
+      orderData.value.order_details = cartData.value.map((item) => {
+        var totalCostDetail = 0;
+
+        if (item.product.product_promotion && item.product?.product_promotion.length > 0) {
+          totalCostDetail =
+            (item.product?.product_price -
+              item.product?.product_promotion[0]?.discount_price) *
+            item.quantity;
+        } else {
+          totalCostDetail = item.product?.product_price * item.quantity;
+        }
+
+        return {
+          product_id: item.product_id,
+          quantity: item.quantity,
+          total_cost_detail: totalCostDetail,
+        };
+      });
+
       const orderResponse = await orderService.create(orderData.value);
-      // Kiểm tra nếu tạo đơn hàng thành công
+
       if (orderResponse && orderResponse.order_id) {
         const order_id = orderResponse.order_id;
 
-        handleCreateSale(order_id, affiliateProductQuantity.value);
-
-        for (const item of cartData.value) {
-          var role = [];
-          role = productStore.getRoleProductPromotion(item.product_id);
-          const productDecreaseQuantity = {
-            product_id: item.product_id,
-            quantity: item.quantity,
-          };
-          const reduceStockResponse = await batchService.reduceStock(productDecreaseQuantity);
-
-          var totalCostDetail = 0;
-          if (role?.includes(atob(Cookies.get('role')))) {
-            totalCostDetail = (item.product?.product_price - item.product?.product_promotion[0]?.discount_price) * item.quantity
-          } else {
-            totalCostDetail = item.product?.product_price * item.quantity
-          }
-          const orderDetailData = {
-            order_id: order_id,
-            product_id: item.product_id,
-            quantity: item.quantity,
-            total_cost_detail: totalCostDetail,
-            batch_details: reduceStockResponse.batchDetails
-          };
-
-          console.log("Order detail data: ", orderDetailData);
-
-          // await order_detailService.create(orderDetailData);
-          handleCreateOrderDetail(orderDetailData);
-
+        // Nếu có mã affiliateUserId thì xử lý sale
+        if (Cookies.get("affiliateUserId")) {
+          handleCreateSale(order_id, affiliateProductQuantity.value);
         }
 
-        await userService.pointDecrement({ point_used: pointUsed.value });
-        if (status == 'preparing') {
+        // Nếu trạng thái là 'preparing', gửi email xác nhận đơn hàng
+        if (status == "preparing") {
           orderService.sendOrderConfirmationEmail(order_id);
         }
-        if (payMethod.value == 'cod') {
+        // Xử lý với phương thức thanh toán là COD
+        if (payMethod.value == "cod") {
           const loadingNotification = showLoading();
           setTimeout(() => {
             showSuccess("Đặt hàng thành công");
             loadingNotification.close();
             setTimeout(() => {
               handleDeleteCart();
-              cartStore.deleteCart();
+              cartStore.deleteCart(); // Xóa giỏ hàng sau khi đặt hàng thành công
               router.push({ name: "profile" });
             }, 500);
           }, 2000);
@@ -558,12 +532,12 @@ const handleOrder = async (status) => {
         console.log("Order data after create: ", orderResponse);
       } else {
         // Xử lý nếu tạo đơn hàng không thành công
-        showWarning('Không thể tạo đơn hàng. Vui lòng thử lại sau.');
+        showWarning("Không thể tạo đơn hàng. Vui lòng thử lại sau.");
       }
     }
   } catch (error) {
     console.log(error.response);
-    showError('Có lỗi xảy ra khi xử lý thanh toán. Vui lòng thử lại sau.');
+    showError("Có lỗi xảy ra khi xử lý thanh toán. Vui lòng thử lại sau.");
   }
 };
 
@@ -579,8 +553,10 @@ const handleCalculateShippingFee = async () => {
     });
     shippingFee.value = response.fee.fee;
     // console.log("Shipping fee: ", response);
+    return response;
   } catch (error) {
     console.log(error);
+    throw error;
   }
 }
 
@@ -595,26 +571,22 @@ onMounted(() => {
   bill_id.value = formattedDate + authStore.user_id;
 
   fetchListProduct();
-  fetchCartData();
-  fetchUserData();
+  fetchUserData().then(() => {
+    fetchCartData().then(() => {
+      handleCalculateShippingFee().then(() => {
+        handleTotal();
+        loading.close();
+      })
+    })
+  });
   fetchCurrentPoint();
   productStore.fetchListProduct();
 
-  setTimeout(() => {
-    handleTotal();
-    handleCalculateShippingFee();
-    console.log("Total Money: ", totalMoney);
-    // console.log("Phi ship: ", calculateShippingFee(4));
-    fetchOrder().then(() => {
-      if (orderGet.value && orderGet.value.status == 'pending_payment') {
-        router.push({ name: 'order-detail', params: { id: orderGet.value.order_id } });
-      }
-    })
-    setTimeout(() => {
-      loading.close();
-    }, 1000);
-  }, 1000);
-
+  fetchOrder().then(() => {
+    if (orderGet.value && orderGet.value.status == 'pending_payment') {
+      router.push({ name: 'order-detail', params: { id: orderGet.value.order_id } });
+    }
+  });
 
   // console.log("Order Get : ", orderGet);
   // console.log(cartStore.addressToPay);
