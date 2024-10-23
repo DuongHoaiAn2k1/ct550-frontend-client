@@ -126,7 +126,7 @@ const hanldeTotal = () => {
   number.value = 0;
   cartData.value.forEach((cart) => {
     number.value = number.value + cart.quantity;
-    if (cart?.product && JSON.parse(cart?.product?.product_promotion[0]?.promotion?.user_group).includes(atob(Cookies.get('role')))) {
+    if (cart?.product && cart.product.product_promotion) {
 
       total.value = total.value + (cart.product.product_price - cart.product.product_promotion[0].discount_price) * cart.quantity;
     } else {
