@@ -225,11 +225,9 @@ import userService from "@/services/user.service";
 import shippingService from "../services/shipping.service";
 import order_detailService from "@/services/order_detail.service";
 import batchService from "../services/batch.service";
-import notificationService from "../services/notification.service";
 import paymentService from "../services/payment.service";
 import affiliateService from "../services/affiliate.service";
 
-const atob = (str) => window.atob(str);
 const orderGet = ref([]);
 const router = useRouter();
 const cartStore = useCartStore();
@@ -461,6 +459,7 @@ const preprocessOrder = async () => {
 
 const handleOrder = async (status) => {
   try {
+    // Chuẩn bị dữ liệu đơn hàng
     orderData.value.bill_id = bill_id;
     orderData.value.status = status;
     orderData.value.name = addressOrder.value.name;
@@ -469,11 +468,10 @@ const handleOrder = async (status) => {
     orderData.value.commue = addressOrder.value.commue;
     orderData.value.district = addressOrder.value.district;
     orderData.value.city = addressOrder.value.city;
-    orderData.value.paid = false;
+    orderData.value.paid = false;  // Cập nhật giá trị thanh toán
     orderData.value.shipping_fee = shippingFee.value;
     orderData.value.total_cost =
-      totalMoney.value -
-      pointUsed.value * 1000 + shippingFee.value;
+      totalMoney.value - pointUsed.value * 1000 + shippingFee.value;
     orderData.value.pay_method = payMethod.value;
     orderData.value.point_used_order = pointUsed.value;
 
@@ -484,57 +482,48 @@ const handleOrder = async (status) => {
         ""
       );
     } else {
+      orderData.value.order_details = cartData.value.map((item) => {
+        var totalCostDetail = 0;
+
+        if (item.product.product_promotion && item.product?.product_promotion.length > 0) {
+          totalCostDetail =
+            (item.product?.product_price -
+              item.product?.product_promotion[0]?.discount_price) *
+            item.quantity;
+        } else {
+          totalCostDetail = item.product?.product_price * item.quantity;
+        }
+
+        return {
+          product_id: item.product_id,
+          quantity: item.quantity,
+          total_cost_detail: totalCostDetail,
+        };
+      });
+
       const orderResponse = await orderService.create(orderData.value);
-      // Kiểm tra nếu tạo đơn hàng thành công
+
       if (orderResponse && orderResponse.order_id) {
         const order_id = orderResponse.order_id;
 
-        if (Cookies.get('affiliateUserId')) {
+        // Nếu có mã affiliateUserId thì xử lý sale
+        if (Cookies.get("affiliateUserId")) {
           handleCreateSale(order_id, affiliateProductQuantity.value);
         }
 
-        for (const item of cartData.value) {
-          var role = [];
-          role = productStore.getRoleProductPromotion(item.product_id);
-          const productDecreaseQuantity = {
-            product_id: item.product_id,
-            quantity: item.quantity,
-          };
-          const reduceStockResponse = await batchService.reduceStock(productDecreaseQuantity);
-
-          var totalCostDetail = 0;
-          if (role?.includes(atob(Cookies.get('role')))) {
-            totalCostDetail = (item.product?.product_price - item.product?.product_promotion[0]?.discount_price) * item.quantity
-          } else {
-            totalCostDetail = item.product?.product_price * item.quantity
-          }
-          const orderDetailData = {
-            order_id: order_id,
-            product_id: item.product_id,
-            quantity: item.quantity,
-            total_cost_detail: totalCostDetail,
-            batch_details: reduceStockResponse.batchDetails
-          };
-
-          console.log("Order detail data: ", orderDetailData);
-
-          // await order_detailService.create(orderDetailData);
-          handleCreateOrderDetail(orderDetailData);
-
-        }
-
-        await userService.pointDecrement({ point_used: pointUsed.value });
-        if (status == 'preparing') {
+        // Nếu trạng thái là 'preparing', gửi email xác nhận đơn hàng
+        if (status == "preparing") {
           orderService.sendOrderConfirmationEmail(order_id);
         }
-        if (payMethod.value == 'cod') {
+        // Xử lý với phương thức thanh toán là COD
+        if (payMethod.value == "cod") {
           const loadingNotification = showLoading();
           setTimeout(() => {
             showSuccess("Đặt hàng thành công");
             loadingNotification.close();
             setTimeout(() => {
               handleDeleteCart();
-              cartStore.deleteCart();
+              cartStore.deleteCart(); // Xóa giỏ hàng sau khi đặt hàng thành công
               router.push({ name: "profile" });
             }, 500);
           }, 2000);
@@ -543,12 +532,12 @@ const handleOrder = async (status) => {
         console.log("Order data after create: ", orderResponse);
       } else {
         // Xử lý nếu tạo đơn hàng không thành công
-        showWarning('Không thể tạo đơn hàng. Vui lòng thử lại sau.');
+        showWarning("Không thể tạo đơn hàng. Vui lòng thử lại sau.");
       }
     }
   } catch (error) {
     console.log(error.response);
-    // showError('Có lỗi xảy ra khi xử lý thanh toán. Vui lòng thử lại sau.');
+    showError("Có lỗi xảy ra khi xử lý thanh toán. Vui lòng thử lại sau.");
   }
 };
 
