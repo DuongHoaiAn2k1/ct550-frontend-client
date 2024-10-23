@@ -53,8 +53,8 @@
                           </h6>
                           <span class="small">Giá:
                             {{
-                              data.product?.product_promotion.length > 0 &&
-                                JSON.parse(data.product?.product_promotion[0].promotion.user_group).includes(atob(Cookies.get('role')))
+                              data.product.product_promotion &&
+                                data.product?.product_promotion.length > 0
                                 ? formatCurrency(data.product?.product_price -
                                   data.product?.product_promotion[0].discount_price) :
                                 formatCurrency(data.product?.product_price)
@@ -65,9 +65,8 @@
                     <td>x{{ data.quantity }}</td>
                     <td class="text-end">
                       {{
-                        data.product?.product_promotion.length > 0
-                          &&
-                          JSON.parse(data.product?.product_promotion[0]?.promotion.user_group).includes(atob(Cookies.get('role')))
+                        data.product.product_promotion &&
+                          data.product?.product_promotion.length > 0
                           ? formatCurrency((data.product?.product_price -
                             data.product?.product_promotion[0].discount_price) * data.quantity) :
                           formatCurrency(data.product?.product_price * data.quantity)
