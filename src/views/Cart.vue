@@ -9,8 +9,8 @@
     <div class="row py-2" style="background-color: white;">
       <div class="col-xl-8">
         <div class="border shadow-none">
-          <CartItem v-for="cart in cartData" :key="cart.cart_id" :cart="cart" :productId="cart.product_id"
-            @delete="handldeDelete" @increment="incrementQuantity" @decrement="decrementQuantity" />
+          <CartItem v-for="cart in cartData" :key="cart.cart_id" :cart="cart" @delete="handldeDelete"
+            @increment="incrementQuantity" @decrement="decrementQuantity" />
         </div>
 
         <div class="row my-4 ">
