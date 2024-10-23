@@ -39,7 +39,7 @@ export default (baseURL) => {
       ) {
         
         // localStorage.setItem("processRefreshToken", true);
-        window.location.href = "https://client.dacsancamau.com:3001/tokenProcess";
+        window.location.href = "https://client.luanvantotnghiep.io.vn/tokenProcess";
       }
       if (
         error.request &&
@@ -48,7 +48,7 @@ export default (baseURL) => {
         && Cookies.get('isUserLoggedIn') == 'false' && window.location.pathname != '/login'
       ) {
         // localStorage.setItem("requireLogin", true);
-        window.location.href = "https://client.dacsancamau.com:3001/login";
+        window.location.href = "https://client.luanvantotnghiep.io.vn/login";
         
       }
 
@@ -56,7 +56,7 @@ export default (baseURL) => {
         error.response.status == 417 &&
         error.response.data.message == "Refresh token expired"){
           Cookies.set("isUserLoggedIn", false);
-          window.location.href = "https://client.dacsancamau.com:3001/login";
+          window.location.href = "https://client.luanvantotnghiep.io.vn/login";
       }
       // if (
       //   error.request &&
