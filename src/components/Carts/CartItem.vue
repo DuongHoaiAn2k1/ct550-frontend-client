@@ -18,9 +18,10 @@
                             <i class="bx bxs-star-half text-warning"></i>
                         </p>
                         <p class="mb-0 mt-1">
-                            Giá : <span class="fw-medium">{{ promotionUser.includes(atob(Cookies.get('role'))) ?
-                                formatCurrency(product.product_price - product.product_promotion[0].discount_price) :
-                                formatCurrency(product.product_price) }}</span>
+                            Giá : <span class="fw-medium">{{ cart.product.product_promotion ?
+                                formatCurrency(cart.product.product_price -
+                                    cart.product.product_promotion[0].discount_price) :
+                                formatCurrency(cart.product.product_price) }}</span>
                         </p>
                     </div>
                 </div>
@@ -54,10 +55,10 @@
             <div class="col-md-2">
                 <div class="mt-1">
                     <p class="text-muted mb-3">Tổng</p>
-                    <h5>{{ promotionUser.includes(atob(Cookies.get('role'))) ?
-                        formatCurrency((product.product_price - product.product_promotion[0].discount_price) *
+                    <h5>{{ cart.product.product_promotion ?
+                        formatCurrency((cart.product.product_price - cart.product.product_promotion[0].discount_price) *
                             cart.quantity) :
-                        formatCurrency(product.product_price * cart.quantity) }}</h5>
+                        formatCurrency(cart.product.product_price * cart.quantity) }}</h5>
                 </div>
             </div>
             <div class="col-md-1">
@@ -86,24 +87,7 @@ const productImg = ref("");
 const promotionUser = ref([]);
 const props = defineProps({
     cart: Object,
-    productId: String,
 });
-
-const fetchProductDetail = async () => {
-    try {
-        const response = await productService.get(props.productId);
-        product.value = response.data[0];
-        productImg.value = JSON.parse(response.data[0].product_img)[0];
-        if (response.data[0].product_promotion.length != 0) {
-            promotionUser.value = JSON.parse(response.data[0].product_promotion[0].promotion.user_group);
-        } else {
-            promotionUser.value = [];
-        }
-        console.log("Fetch product detail from store: ", response);
-    } catch (error) {
-        console.error('Failed to fetch products:', error);
-    }
-}
 
 onMounted(() => {
     fetchProductDetail();
