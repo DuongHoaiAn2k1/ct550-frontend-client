@@ -58,6 +58,10 @@ class ProductService {
   async searchAi(data) {
     return (await this.api.post("/search-ai/query", data)).data;
   }
+
+  async searchAiMini(data) {
+    return (await this.api.post("/search-ai/mini", data)).data;
+  }
 }
 
 export default new ProductService();
