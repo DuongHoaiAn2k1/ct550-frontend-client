@@ -244,7 +244,7 @@
                         <th scope="row">Số điện thoại</th>
                         <td>
                           <input type="text" name="phone" v-model="addressInfoData.phone"
-                            placeholder="Vui lòng nhập số điện thoại" />
+                            placeholder="Vui lòng nhập số điện thoại" maxlength="10" />
                         </td>
                       </tr>
                       <span class="text-danger">{{ phoneError }}</span>
@@ -621,6 +621,7 @@ const redirectToAffiliate = () => {
 const schema = Yup.object().shape({
   name: Yup.string().required("Họ và tên không được để trống"),
   phone: Yup.string()
+    .matches(/^\d+$/, "Số điện thoại chỉ được chứa số")
     .min(10, "Số điện thoại phải 10 ký tự")
     .max(10, "Số điện thoại phải 10 ký tự")
     .required("Số điện thoại không được để trống"),
