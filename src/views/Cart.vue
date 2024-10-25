@@ -9,8 +9,8 @@
     <div class="row py-2" style="background-color: white;">
       <div class="col-xl-8">
         <div class="border shadow-none">
-          <CartItem v-for="cart in cartData" :key="cart.cart_id" :cart="cart" :productId="cart.product_id"
-            @delete="handldeDelete" @increment="incrementQuantity" @decrement="decrementQuantity" />
+          <CartItem v-for="cart in cartData" :key="cart.cart_id" :cart="cart" @delete="handleDelete"
+            @increment="incrementQuantity" @decrement="decrementQuantity" />
         </div>
 
         <div class="row my-4 ">
@@ -59,7 +59,6 @@ import { showWarning } from "@/helpers/NotificationHelper";
 import userService from "@/services/user.service";
 import { h } from 'vue'
 import { ElNotification } from 'element-plus'
-const atob = (str) => window.atob(str);
 
 const authStore = useAuthStore();
 const cartStore = useCartStore();
@@ -90,6 +89,8 @@ const fetchCartData = async () => {
     const response = await cartService.get(authStore.user_id);
     cartData.value = response.data;
     console.log("Cart Data: ", response);
+
+    handleTotal();
   } catch (error) {
     console.log(error.response);
   }
@@ -111,17 +112,18 @@ const handleDecrease = async (id) => {
   }
 };
 
-const handldeDelete = async (id) => {
+const handleDelete = async (id) => {
   try {
     const response = await cartService.delete(id);
     fetchCartData();
-    await cartStore.fetchCartCount();
+    cartStore.fetchCartCount();
+    // console.log(response);
   } catch (error) {
     console.log(error.response);
   }
 };
 
-const hanldeTotal = () => {
+const handleTotal = () => {
   total.value = 0;
   number.value = 0;
   cartData.value.forEach((cart) => {
@@ -155,7 +157,7 @@ const hanleRedirectPayment = () => {
 onMounted(async () => {
   await productStore.fetchListProduct();
   fetchCartData().then(() => {
-    hanldeTotal();
+    handleTotal();
   });
   fetchUserData();
 
@@ -165,7 +167,7 @@ const incrementQuantity = (cartItem) => {
   if (cartItem.quantity < 10) {
     cartItem.quantity += 1;
     handleIncrease(cartItem.cart_id);
-    hanldeTotal();
+    handleTotal();
   } else {
     showWarning("Đã quá số lượng sản phẩm cho phép");
   }
@@ -175,7 +177,7 @@ const decrementQuantity = (cartItem) => {
   if (cartItem.quantity > 1) {
     cartItem.quantity -= 1;
     handleDecrease(cartItem.cart_id);
-    hanldeTotal();
+    handleTotal();
   } else {
     showWarning("Đã quá đạt số lượng tối thiểu");
   }

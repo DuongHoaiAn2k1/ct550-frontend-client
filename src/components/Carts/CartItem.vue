@@ -3,12 +3,12 @@
         <div class="row align-items-start border-bottom pb-3">
             <div class="col-md-7 d-flex">
                 <div class="me-4">
-                    <img alt="" :src="apiUrl + productImg" class="avatar-lg rounded" />
+                    <img alt="" :src="apiUrl + JSON.parse(cart.product.product_img)[0]" class="avatar-lg rounded" />
                 </div>
                 <div class="flex-grow-1 align-self-center overflow-hidden">
                     <div>
                         <h5 class="text-truncate font-size-18">
-                            <a href="#" class="text-dark">{{ product.product_name }}</a>
+                            <a href="#" class="text-dark">{{ cart.product.product_name }}</a>
                         </h5>
                         <p class="text-muted mb-0">
                             <i class="bx bxs-star text-warning"></i>
@@ -18,9 +18,11 @@
                             <i class="bx bxs-star-half text-warning"></i>
                         </p>
                         <p class="mb-0 mt-1">
-                            Giá : <span class="fw-medium">{{ promotionUser.includes(atob(Cookies.get('role'))) ?
-                                formatCurrency(product.product_price - product.product_promotion[0].discount_price) :
-                                formatCurrency(product.product_price) }}</span>
+                            Giá : <span class="fw-medium">{{ (cart.product.product_promotion &&
+                                cart.product.product_promotion.length > 0) ?
+                                formatCurrency(cart.product.product_price -
+                                    cart.product.product_promotion[0].discount_price) :
+                                formatCurrency(cart.product.product_price) }}</span>
                         </p>
                     </div>
                 </div>
@@ -54,10 +56,11 @@
             <div class="col-md-2">
                 <div class="mt-1">
                     <p class="text-muted mb-3">Tổng</p>
-                    <h5>{{ promotionUser.includes(atob(Cookies.get('role'))) ?
-                        formatCurrency((product.product_price - product.product_promotion[0].discount_price) *
+                    <h5>{{ (cart.product.product_promotion &&
+                        cart.product.product_promotion.length > 0) ?
+                        formatCurrency((cart.product.product_price - cart.product.product_promotion[0].discount_price) *
                             cart.quantity) :
-                        formatCurrency(product.product_price * cart.quantity) }}</h5>
+                        formatCurrency(cart.product.product_price * cart.quantity) }}</h5>
                 </div>
             </div>
             <div class="col-md-1">
@@ -76,37 +79,14 @@
 <script setup>
 import { onMounted, ref } from 'vue';
 import { formatCurrency } from '@/helpers/UtilHelper';
-import Cookies from 'js-cookie';
-import productService from '../../services/product.service';
 
 const apiUrl = import.meta.env.VITE_APP_API_URL;
-const atob = (str) => window.atob(str);
-const product = ref({});
-const productImg = ref("");
-const promotionUser = ref([]);
 const props = defineProps({
     cart: Object,
-    productId: String,
 });
 
-const fetchProductDetail = async () => {
-    try {
-        const response = await productService.get(props.productId);
-        product.value = response.data[0];
-        productImg.value = JSON.parse(response.data[0].product_img)[0];
-        if (response.data[0].product_promotion.length != 0) {
-            promotionUser.value = JSON.parse(response.data[0].product_promotion[0].promotion.user_group);
-        } else {
-            promotionUser.value = [];
-        }
-        console.log("Fetch product detail from store: ", response);
-    } catch (error) {
-        console.error('Failed to fetch products:', error);
-    }
-}
 
 onMounted(() => {
-    fetchProductDetail();
 });
 
 </script>
