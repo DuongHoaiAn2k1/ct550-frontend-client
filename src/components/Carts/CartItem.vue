@@ -3,12 +3,12 @@
         <div class="row align-items-start border-bottom pb-3">
             <div class="col-md-7 d-flex">
                 <div class="me-4">
-                    <img alt="" :src="apiUrl + JSON.parse(cart?.product.product_img)[0]" class="avatar-lg rounded" />
+                    <img alt="" :src="apiUrl + JSON.parse(cart.product.product_img)[0]" class="avatar-lg rounded" />
                 </div>
                 <div class="flex-grow-1 align-self-center overflow-hidden">
                     <div>
                         <h5 class="text-truncate font-size-18">
-                            <a href="#" class="text-dark">{{ product.product_name }}</a>
+                            <a href="#" class="text-dark">{{ cart.product.product_name }}</a>
                         </h5>
                         <p class="text-muted mb-0">
                             <i class="bx bxs-star text-warning"></i>
@@ -18,7 +18,8 @@
                             <i class="bx bxs-star-half text-warning"></i>
                         </p>
                         <p class="mb-0 mt-1">
-                            Giá : <span class="fw-medium">{{ cart.product.product_promotion ?
+                            Giá : <span class="fw-medium">{{ (cart.product.product_promotion &&
+                                cart.product.product_promotion.length > 0) ?
                                 formatCurrency(cart.product.product_price -
                                     cart.product.product_promotion[0].discount_price) :
                                 formatCurrency(cart.product.product_price) }}</span>
@@ -55,7 +56,8 @@
             <div class="col-md-2">
                 <div class="mt-1">
                     <p class="text-muted mb-3">Tổng</p>
-                    <h5>{{ cart.product.product_promotion ?
+                    <h5>{{ (cart.product.product_promotion &&
+                        cart.product.product_promotion.length > 0) ?
                         formatCurrency((cart.product.product_price - cart.product.product_promotion[0].discount_price) *
                             cart.quantity) :
                         formatCurrency(cart.product.product_price * cart.quantity) }}</h5>
@@ -77,21 +79,15 @@
 <script setup>
 import { onMounted, ref } from 'vue';
 import { formatCurrency } from '@/helpers/UtilHelper';
-import { showLoading } from "../../helpers/LoadingHelper";
 
 const apiUrl = import.meta.env.VITE_APP_API_URL;
-const product = ref({});
 const props = defineProps({
     cart: Object,
 });
 
-onMounted(() => {
-    const loading = showLoading();
-    setTimeout(() => {
-        loading.close();
-    }, 500);
-});
 
+onMounted(() => {
+});
 
 </script>
 

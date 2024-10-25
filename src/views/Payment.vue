@@ -100,7 +100,7 @@
                     <td class="text-end">
                       +{{ point }} điểm &nbsp;
                       <span data-bs-toggle="tooltip" data-bs-placement="bottom"
-                        title="Đối với các đơn hàng trên 500k sẽ được cộng 10 điểm tích lũy">
+                        title="Đối với các đơn hàng trên 1 triệu sẽ được cộng 10 điểm tích lũy">
                         <i class="fa-solid fa-circle-info"></i>
                       </span>
                     </td>
@@ -219,6 +219,7 @@ import { useProductStore } from "@/stores/product";
 import { onMounted, ref, watch } from "vue";
 import orderService from "@/services/order.service";
 import { useAuthStore } from "@/stores/auth";
+import { useNotificationStore } from "@/stores/notification";
 import productService from "@/services/product.service";
 import cartService from "@/services/cart.service";
 import userService from "@/services/user.service";
@@ -232,8 +233,8 @@ const orderGet = ref([]);
 const router = useRouter();
 const cartStore = useCartStore();
 const authStore = useAuthStore();
+const notificationStore = useNotificationStore();
 const productStore = useProductStore();
-const total = ref(0);
 const bill_id = ref("");
 const currentDay = new Date();
 const day = currentDay.getDate();
@@ -327,10 +328,6 @@ const fetchCurrentPoint = async () => {
   } catch (error) {
     console.log(error.response);
   }
-};
-
-const getProduct = (id) => {
-  return listProduct.value.filter((data) => data.product_id == id)[0];
 };
 
 const handleCreateSale = async (orderId, quantity) => {
@@ -481,6 +478,8 @@ const handleOrder = async (status) => {
         currentPoint.value +
         ""
       );
+
+      throw new Error("Not enough point");
     } else {
       orderData.value.order_details = cartData.value.map((item) => {
         var totalCostDetail = 0;
@@ -524,6 +523,7 @@ const handleOrder = async (status) => {
             setTimeout(() => {
               handleDeleteCart();
               cartStore.deleteCart(); // Xóa giỏ hàng sau khi đặt hàng thành công
+              notificationStore.getByUser();
               router.push({ name: "profile" });
             }, 500);
           }, 2000);
@@ -537,7 +537,8 @@ const handleOrder = async (status) => {
     }
   } catch (error) {
     console.log(error.response);
-    showError("Có lỗi xảy ra khi xử lý thanh toán. Vui lòng thử lại sau.");
+    // showError(error.response.message);
+    throw error;
   }
 };
 

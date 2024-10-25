@@ -593,6 +593,7 @@ const echoInstance = initializeEcho();
 echoInstance.channel(`user-channel.${userId.value}`)
   .listen('.order.update.status', async (event) => {
     orderStore.fetchListOrder();
+    fetchUserData();
   });
 
 echoInstance.channel(`user-channel.${userId.value}`).listen('.affiliate-approved', async (event) => {
