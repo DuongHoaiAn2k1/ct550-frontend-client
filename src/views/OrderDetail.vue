@@ -200,7 +200,7 @@
                   border-bottom-right-radius: 10px;
                 ">
               <h5 class="d-flex align-items-center justify-content-end text-white text-uppercase mb-0">
-                TỔNG PHẢI THANH TOÁN:
+                TỔNG TIỀN:
                 <span class="h2 mb-0 ms-2">{{
                   formatCurrency(order.total_cost)
                 }}</span>
