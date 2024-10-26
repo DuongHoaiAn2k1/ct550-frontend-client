@@ -50,6 +50,10 @@ const notificationOptions = {
     'profile': {
         message: 'Yêu cầu của bạn đã được xét duyệt',
         sub: 'Tiếp thị liên kết'
+    },
+    '': {
+        message: '',
+        sub: 'Nâng cấp hạng thành viên'
     }
 }
 

@@ -56,6 +56,7 @@ import cartService from "@/services/cart.service";
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { showWarning } from "@/helpers/NotificationHelper";
+import { showSuccessMessage } from "@/helpers/NotificationHelper";
 import userService from "@/services/user.service";
 import { h } from 'vue'
 import { ElNotification } from 'element-plus'
@@ -117,6 +118,7 @@ const handleDelete = async (id) => {
     const response = await cartService.delete(id);
     fetchCartData();
     cartStore.fetchCartCount();
+    showSuccessMessage('Xóa thành công');
     // console.log(response);
   } catch (error) {
     console.log(error.response);
