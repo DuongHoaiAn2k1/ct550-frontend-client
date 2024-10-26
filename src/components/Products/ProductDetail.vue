@@ -81,13 +81,15 @@
                     </div>
                     <div class="col-xs-6">
                         <button @click="handleAddToCart(product.product_id, product.weight)" type="button"
-                            class="btn btn-dark shop-button me-1 " :class="inStock ? '' : 'button-disabled'"
-                            :disabled="!inStock">
-                            {{ inStock ? 'Thêm vào giỏ hàng' : 'Hết hàng' }}
+                            class="btn btn-dark shop-button me-1 "
+                            :class="product.available_quantity > 0 ? '' : 'button-disabled'"
+                            :disabled="product.available_quantity == 0">
+                            {{ product.available_quantity > 0 ? 'Thêm vào giỏ hàng' : 'Hết hàng' }}
                         </button>
                         <button @click="handleBuyNow(product.product_id, product.weight)" type="button"
                             class="btn shop-button" style="background-color: #234A2B; color: white;"
-                            :class="inStock ? '' : 'button-disabled'" :disabled="!inStock">
+                            :class="product.available_quantity > 0 ? '' : 'button-disabled'"
+                            :disabled="product.available_quantity == 0">
                             Mua ngay
                         </button>
                         <div class="product_fav" @click="createFavorite(product.product_id)">
