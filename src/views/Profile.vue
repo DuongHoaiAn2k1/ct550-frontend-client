@@ -40,6 +40,10 @@
                             <th scope="row">Điểm tích lũy</th>
                             <td>{{ userData.point ? userData.point : 0 }}</td>
                           </tr>
+                          <tr>
+                            <th scope="row">Danh hiệu</th>
+                            <td>{{ userData.role == 'normal_user' ? 'Khách hàng' : 'Khách hàng thân thiết' }}</td>
+                          </tr>
                           <!-- end tr -->
                         </tbody>
                         <!-- end tbody -->
@@ -488,7 +492,7 @@
       <label for="social_media_link" class="col-sm-2 col-form-label">Link mạng xã hội</label>
       <div class="col-sm-10">
         <input v-model="affiliateData.social_media_link" type="text" class="form-control" id="social_media_link"
-          placeholder="Link trang cá nhân facebook hoặc các mạng xã hội khác"
+          placeholder="Link trang cá nhân facebook hoặc các mạng xã hội khác" maxlength="100"
           :disabled="affiliateStatus == 'pending' || affiliateStatus == 'rejected'" />
       </div>
     </div>
@@ -557,10 +561,11 @@
 import * as Yup from "yup";
 import Cookies from 'js-cookie';
 import userService from "@/services/user.service";
-import { computed, onMounted, reactive, ref, watchEffect } from "vue";
+import { computed, onMounted, reactive, ref, watchEffect, watch } from "vue";
 import { useAuthStore } from "@/stores/auth";
 import { useFavoriteStore } from "../stores/favorite";
 import { useOrderStore } from "../stores/order";
+import { useNotificationStore } from "@/stores/notification";
 import addressData from "@/assets/address/dvhc.json";
 import { convertTime, formatCurrency } from '@/helpers/UtilHelper';
 import { showSuccess, showWarning } from "../helpers/NotificationHelper";
@@ -576,6 +581,7 @@ const authStore = useAuthStore();
 const userId = computed(() => authStore.user_id);
 const favoriteStore = useFavoriteStore();
 const orderStore = useOrderStore();
+const notificationStore = useNotificationStore();
 const userData = ref({});
 const nameUser = ref("");
 const imageUpdate = ref("");
@@ -594,6 +600,7 @@ echoInstance.channel(`user-channel.${userId.value}`)
   .listen('.order.update.status', async (event) => {
     orderStore.fetchListOrder();
     fetchUserData();
+    notificationStore.getByUser();
   });
 
 echoInstance.channel(`user-channel.${userId.value}`).listen('.affiliate-approved', async (event) => {
@@ -641,6 +648,7 @@ const affiliateStatus = ref("");
 const affiliateSchema = Yup.object().shape({
   name: Yup.string().required("Họ và tên không được để trống"),
   phone: Yup.string()
+    .matches(/^\d+$/, "Số điện thoại chỉ được chứa số")
     .min(10, "Số điện thoại phải 10 ký tự")
     .max(10, "Số điện thoại phải 10 ký tự")
     .required("Số điện không được để trống"),
@@ -1026,6 +1034,13 @@ const paginatedFavoriteList = computed(() => {
 const paginatedOrderList = computed(() => {
   const startIndex = (currentOrderPage.value - 1) * pageSize;
   return orderStore.listOrder.slice(startIndex, startIndex + pageSize);
+})
+
+watch(affiliateData.value, (newVal) => {
+  if (newVal) {
+    affiliatePhoneNumberError.value = '';
+    affiliateNameError.value = '';
+  }
 })
 </script>
 

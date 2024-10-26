@@ -58,6 +58,12 @@ export default (baseURL) => {
           Cookies.set("isUserLoggedIn", false);
           window.location.href = "https://client.luanvantotnghiep.io.vn/login";
       }
+
+      if(error.request &&
+        error.response.status == 401 &&
+        error.response.data.message == "Unauthenticated" && Cookies.get('isUserLoggedIn') == 'true' && window.location.pathname != '/tokenProcess'){
+          window.location.href = "https://client.luanvantotnghiep.io.vn/login";
+      }
       // if (
       //   error.request &&
       //   error.response.status == 500 &&
