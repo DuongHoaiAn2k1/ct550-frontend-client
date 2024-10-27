@@ -17,7 +17,8 @@
         </div>
         <ProductList :listProductByCategory="listProductByCategory" :formatCurrency="formatCurrency" />
         <ProductReview :isReviewProduct="isReviewProduct" :isBuyingProduct="isBuyingProduct" :productId="productId"
-          @checkUserReviewProduct="checkUserReviewProduct" @checkBuyingProduct="checkBuyingProduct" />
+          @checkUserReviewProduct="checkUserReviewProduct" @checkBuyingProduct="checkBuyingProduct"
+          @fetchProduct="fetchProduct" />
       </div>
     </div>
   </div>
