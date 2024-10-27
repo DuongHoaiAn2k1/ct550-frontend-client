@@ -9,6 +9,10 @@ class ReviewService {
     return (await this.api.post("/", data)).data;
   }
 
+  async update(id, data) {
+    return (await this.api.patch(`update/${id}`, data)).data;
+  }
+  
   async getAll() {
     return (await this.api.get("/")).data;
   }
