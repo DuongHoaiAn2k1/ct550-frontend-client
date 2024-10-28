@@ -334,8 +334,11 @@
                 :class="Cookies.get('isGoogleLogin') == 'true' ? 'disabled-item' : ''">
                 <i class="fa-solid fa-key"></i> Đổi mật khẩu
               </li>
-              <li class="list-group-item list-group-item-action my-1 btn">
+              <!-- <li class="list-group-item list-group-item-action my-1 btn">
                 <i class="fa-solid fa-trash"></i> Xóa tài khoản
+              </li> -->
+              <li class="list-group-item list-group-item-action my-1 btn" @click="showRefundRequestForm = true">
+                <i class="fa-solid fa-money-bill"></i> Hoàn tiền
               </li>
               <li v-show="affiliateStatus != 'approved' || !affiliateStatus"
                 class="list-group-item list-group-item-action my-1 btn" @click="dialogAffiliateRegister = true">
@@ -554,7 +557,72 @@
     </div>
   </el-dialog>
 
+  <el-dialog v-model="showRefundRequestForm" title="Yêu cầu hoàn tiền của bạn" width="1000" center>
+    <section class="intro">
+      <div class="gradient-custom-1 h-100">
+        <div class="mask d-flex align-items-center h-100">
+          <div class="container">
+            <div class="row justify-content-center">
+              <div class="col-12">
+                <div class="table-responsive bg-white">
+                  <table class="table mb-0">
+                    <thead>
+                      <tr>
+                        <th scope="col">STT</th>
+                        <th scope="col">Mã đơn hàng</th>
+                        <th scope="col">Trạng thái</th>
+                        <th scope="col">Thời gian yêu cầu</th>
+                        <th scope="col">Chi tiết</th>
+                      </tr>
+                    </thead>
 
+                    <tbody>
+                      <tr v-for="(data, index) in paginatedRefundList" :key="data.refund_request_id">
+                        <th scope="row" style="color: #666666">
+                          {{ index + 1 }}
+                        </th>
+                        <td>
+                          #{{ data.bill_id }}
+                        </td>
+                        <td><span v-show="data.refund_request_status == 'pending'"
+                            class="badge rounded-pill text-info font-size-11 task-status">Chưa xử
+                            lý</span>
+                          <span v-show="data.refund_request_status == 'processing'"
+                            class="badge rounded-pill orange font-size-11 task-status">Đang xử lý</span>
+                          <span v-show="data.refund_request_status == 'completed'"
+                            class="badge rounded-pill text-success font-size-11 task-status">Đã
+                            hoàn</span>
+                        </td>
+                        <td>
+                          {{ convertTime(data.created_at) }}
+                        </td>
+                        <td>
+                          <router-link :to="{
+                            name: 'order-detail',
+                            params: { id: data.order_id },
+                          }">Xem chi tiết</router-link>
+                        </td>
+
+                      </tr>
+
+                    </tbody>
+                  </table>
+                  <div class="text-center">
+                    <span v-show="listRefundRequest.length == 0" style="font-size: 20px;"> Không có yêu cầu nào</span>
+                  </div>
+                  <div class="text-end">
+                    <el-pagination v-model:current-page="currentRefundPage" @current-change="handleRefundCurrentChange"
+                      small background layout="prev, pager, next"
+                      :total="Math.ceil(listRefundRequest.length / pageSize) * 10" class="mt-4" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </el-dialog>
 
 </template>
 
@@ -575,10 +643,12 @@ import affiliateService from "@/services/affiliate.service";
 import favoriteService from "@/services/favorite.service";
 import { useRouter } from "vue-router";
 import { initializeEcho } from "../pusher/echoConfig";
+import refundService from "../services/refund.service";
 
 const apiUrl = import.meta.env.VITE_APP_API_URL;
 const authStore = useAuthStore();
 
+const showRefundRequestForm = ref(false);
 const userId = computed(() => authStore.user_id);
 const favoriteStore = useFavoriteStore();
 const orderStore = useOrderStore();
@@ -992,6 +1062,7 @@ onMounted(async () => {
   await favoriteStore.fetchListFavorite();
   await orderStore.fetchListOrder();
   Cookies.remove("recentOrderBillId");
+  fetchRefund();
 
   // console.log("GET: ", getDataDistric("01")[0].name);
 });
@@ -1043,7 +1114,31 @@ watch(affiliateData.value, (newVal) => {
     affiliatePhoneNumberError.value = '';
     affiliateNameError.value = '';
   }
+});
+
+/////////////////Handle refund Start////////////////////
+const listRefundRequest = ref([]);
+const fetchRefund = async () => {
+  try {
+    const response = await refundService.getByUser();
+    console.log('List refund: ', response);
+    listRefundRequest.value = response.data;
+  } catch (error) {
+    console.log(error)
+  }
+}
+
+const currentRefundPage = ref(1);
+const handleRefundCurrentChange = (val) => {
+  currentRefundPage.value = val;
+}
+
+const paginatedRefundList = computed(() => {
+  const startIndex = (currentRefundPage.value - 1) * pageSize;
+  return listRefundRequest.value.slice(startIndex, startIndex + pageSize);
 })
+
+/////////////////Handle refund End////////////////////
 </script>
 
 <style scoped>
