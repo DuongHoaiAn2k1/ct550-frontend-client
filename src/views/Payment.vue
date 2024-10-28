@@ -387,17 +387,6 @@ const handleDeleteCart = async () => {
   }
 };
 
-const handleCreateOrderDetail = async (data) => {
-  try {
-    const response = await order_detailService.create(data);
-    console.log("After create order detail: ", response);
-    return response;
-  } catch (error) {
-    console.log(error.response);
-    throw error;
-  }
-}
-
 
 const preprocessOrder = async () => {
   checkStockAvailable(cartData.value).then(async () => {
@@ -425,7 +414,7 @@ const preprocessOrder = async () => {
           order_id: bill_id.value,
           order_desc: "Thanh toán đơn hàng #" + bill_id.value,
           order_type: "billpayment",
-          amount: totalMoney.value,
+          amount: totalMoney.value - pointUsed.value * 1000 + shippingFee.value,
           language: "vn",
           txtexpire: year + monthStr + dayStr + hourStr + minuteStr + secondStr,
           txt_billing_mobile: addressOrder.value.phone,
