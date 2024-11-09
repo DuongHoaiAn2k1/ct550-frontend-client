@@ -74,7 +74,7 @@
                       }">
                         <img :src="apiUrl +
                           JSON.parse(data.product.product_img)[0]
-                          " class="img-fluid" alt="Phone" />
+                          " class="img-fluid" alt="Phone" width="100px" />
                       </router-link>
                     </div>
                     <div class="col-md-2 text-center d-flex justify-content-center align-items-center">
@@ -203,7 +203,7 @@
                 TỔNG TIỀN:
                 <span class="h2 mb-0 ms-2">{{
                   formatCurrency(order.total_cost)
-                  }}</span>
+                }}</span>
               </h5>
             </div>
           </div>

@@ -38,12 +38,18 @@
                           </tr>
                           <tr>
                             <th scope="row">Điểm tích lũy</th>
-                            <td>{{ userData.point ? userData.point : 0 }}</td>
+                            <td>{{ userData.point ? userData.point : 0 }} <span class="fw-light text-muted small ms-2">
+                                Còn lại: {{ daysUntil(userData.point_expiration_date) < 0 ? 0 :
+                                  daysUntil(userData.point_expiration_date) }} ngày sử dụng </span>
+                            </td>
                           </tr>
 
                           <tr>
                             <th scope="row">Danh hiệu</th>
-                            <td>{{ userData.role == 'normal_user' ? 'Khách hàng' : 'Khách hàng thân thiết' }}</td>
+                            <td>{{ userData.role == 'normal_user' ? 'Khách hàng' : 'Khách hàng thân thiết' }} <span
+                                data-bs-toggle="tooltip" data-bs-placement="bottom"
+                                title="Đối với khách hàng có tổng tiền mua sắm trên 10 triệu sẽ được trở thành khách hàng thân thiết">
+                                <i class="fa-solid fa-circle-info text-end"></i> </span></td>
                           </tr>
                           <!-- end tr -->
                         </tbody>
@@ -1138,7 +1144,19 @@ const paginatedRefundList = computed(() => {
   return listRefundRequest.value.slice(startIndex, startIndex + pageSize);
 })
 
+
 /////////////////Handle refund End////////////////////
+
+const daysUntil = (targetDate) => {
+  const now = new Date();
+  const endDate = new Date(targetDate);
+
+  const timeDifference = endDate - now;
+
+  const daysDifference = Math.ceil(timeDifference / (1000 * 60 * 60 * 24));
+
+  return daysDifference;
+}
 </script>
 
 <style scoped>

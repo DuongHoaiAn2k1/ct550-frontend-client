@@ -49,9 +49,9 @@
                           <h6 class="small mb-0">
                             <a href="#" class="text-reset">{{
                               data.product.product_name
-                              }}</a>
+                            }}</a>
                           </h6>
-                          <span class="small">Giá:
+                          <span v-show="data.product.product_promotion" class="small">Giá:
                             {{
                               data.product.product_promotion &&
                                 data.product?.product_promotion.length > 0
@@ -59,17 +59,41 @@
                                   data.product?.product_promotion[0].discount_price) :
                                 formatCurrency(data.product?.product_price)
                             }}</span>
+                          <span v-show="data.product.batches" class="small">Giá:
+                            {{
+                              data.product.batches
+                                ? formatCurrency(data.product?.product_price -
+                                  data.product?.batches[0].batch_promotion[0].discount_price) :
+                                formatCurrency(data.product?.product_price)
+                            }}</span>
+                          <span v-show="!data.product.product_promotion && !data.product.batches" class="small">Giá:
+                            {{
+                              formatCurrency(data.product?.product_price)
+                            }}</span>
                         </div>
                       </div>
                     </td>
                     <td>x{{ data.quantity }}</td>
-                    <td class="text-end">
+                    <td v-show="data.product.product_promotion" class="text-end">
                       {{
                         data.product.product_promotion &&
                           data.product?.product_promotion.length > 0
                           ? formatCurrency((data.product?.product_price -
                             data.product?.product_promotion[0].discount_price) * data.quantity) :
                           formatCurrency(data.product?.product_price * data.quantity)
+                      }}
+                    </td>
+                    <td v-show="data.product.batches" class="text-end">
+                      {{
+                        data.product.batches
+                          ? formatCurrency((data.product?.product_price -
+                            data.product?.batches[0].batch_promotion[0].discount_price) * data.quantity) :
+                          formatCurrency(data.product?.product_price * data.quantity)
+                      }}
+                    </td>
+                    <td v-show="!data.product.product_promotion && !data.product.batches" class="text-end">
+                      {{
+                        formatCurrency(data.product?.product_price * data.quantity)
                       }}
                     </td>
                   </tr>
@@ -224,7 +248,6 @@ import productService from "@/services/product.service";
 import cartService from "@/services/cart.service";
 import userService from "@/services/user.service";
 import shippingService from "../services/shipping.service";
-import order_detailService from "@/services/order_detail.service";
 import batchService from "../services/batch.service";
 import paymentService from "../services/payment.service";
 import affiliateService from "../services/affiliate.service";
@@ -362,7 +385,12 @@ const handleTotal = () => {
       totalMoney.value =
         totalMoney.value +
         (cart?.product?.product_price - cart?.product?.product_promotion[0].discount_price) * cart.quantity;
-    } else {
+    } else if (cart.product.batches) {
+      totalMoney.value =
+        totalMoney.value +
+        (cart?.product?.product_price - cart?.product?.batches[0].batch_promotion[0].discount_price) * cart.quantity;
+    }
+    else {
       totalMoney.value =
         totalMoney.value +
         cart?.product?.product_price * cart.quantity;
@@ -478,7 +506,11 @@ const handleOrder = async (status) => {
             (item.product?.product_price -
               item.product?.product_promotion[0]?.discount_price) *
             item.quantity;
-        } else {
+        }
+        else if (item.is_promotion_batch_applied) {
+          totalCostDetail = (item.product?.product_price - item.product?.batches[0]?.batch_promotion[0]?.discount_price) * item.quantity
+        }
+        else {
           totalCostDetail = item.product?.product_price * item.quantity;
         }
 
@@ -486,6 +518,7 @@ const handleOrder = async (status) => {
           product_id: item.product_id,
           quantity: item.quantity,
           total_cost_detail: totalCostDetail,
+          is_promotion_batch_applied: item.is_promotion_batch_applied
         };
       });
 

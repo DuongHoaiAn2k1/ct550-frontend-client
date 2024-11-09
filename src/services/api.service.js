@@ -1,5 +1,6 @@
 import axios from "axios";
 import Cookies from "js-cookie";
+const domain = import.meta.env.VITE_APP_DOMAIN_NAME;
 const commonConfig = {
   headers: {
     Accept: "application/json",
@@ -39,7 +40,7 @@ export default (baseURL) => {
       ) {
         
         // localStorage.setItem("processRefreshToken", true);
-        window.location.href = "https://client.dacsancamau.com:3001/tokenProcess";
+        window.location.href = domain + "/tokenProcess";
       }
       if (
         error.request &&
@@ -48,7 +49,7 @@ export default (baseURL) => {
         && Cookies.get('isUserLoggedIn') == 'false' && window.location.pathname != '/login'
       ) {
         // localStorage.setItem("requireLogin", true);
-        window.location.href = "https://client.dacsancamau.com:3001/login";
+        window.location.href = domain + "/login";
         
       }
 
@@ -56,13 +57,19 @@ export default (baseURL) => {
         error.response.status == 417 &&
         error.response.data.message == "Refresh token expired"){
           Cookies.set("isUserLoggedIn", false);
-          window.location.href = "https://client.dacsancamau.com:3001/login";
+          window.location.href =  domain + "/login";
       }
 
       if(error.request &&
         error.response.status == 401 &&
-        error.response.data.message == "Unauthenticated" && Cookies.get('isUserLoggedIn') == 'true' && window.location.pathname != '/tokenProcess'){
-          window.location.href = "https://client.dacsancamau.com:3001/tokenProcess";
+        error.response.data.message == "Unauthenticated." && Cookies.get('isUserLoggedIn') == 'true' && window.location.pathname != '/tokenProcess'){
+          window.location.href = domain + "/tokenProcess";
+      }
+
+      if(error.request &&
+        error.response.status == 401 &&
+        error.response.data.message == "Unauthenticated." && Cookies.get('isUserLoggedIn') != 'true'){
+          window.location.href = domain + "/login";
       }
       // if (
       //   error.request &&

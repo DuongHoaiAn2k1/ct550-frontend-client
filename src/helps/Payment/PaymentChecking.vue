@@ -24,15 +24,17 @@
 
 <script setup>
 import Cookies from 'js-cookie';
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import paymentService from '../../services/payment.service';
 import { useRoute } from 'vue-router';
 import { showLoading } from '../../helpers/LoadingHelper';
 import orderService from '../../services/order.service';
+import { useNotificationStore } from '../../stores/notification';
 
 const route = useRoute();
 const showResult = ref(false);
 const showFailed = ref(false);
+const notificationStore = useNotificationStore();
 
 const handlePaymentChecking = async (params) => {
     const loading = showLoading();
@@ -101,7 +103,12 @@ onMounted(() => {
         vnp_TxnRef: route.query.vnp_TxnRef,
         vnp_SecureHash: route.query.vnp_SecureHash
     });
+
+    setTimeout(() => {
+        notificationStore.getByUser();
+    }, 2500);
 });
+
 </script>
 
 <style scoped>

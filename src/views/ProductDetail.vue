@@ -16,9 +16,7 @@
           <div class="col-md-6"></div>
         </div>
         <ProductList :listProductByCategory="listProductByCategory" :formatCurrency="formatCurrency" />
-        <ProductReview :isReviewProduct="isReviewProduct" :isBuyingProduct="isBuyingProduct" :productId="productId"
-          @checkUserReviewProduct="checkUserReviewProduct" @checkBuyingProduct="checkBuyingProduct"
-          @fetchProduct="fetchProduct" />
+        <ProductReview :productId="productId" @fetchProduct="fetchProduct" />
       </div>
     </div>
   </div>
@@ -62,8 +60,6 @@ const img_2 = ref("");
 const img_3 = ref("");
 const quantity = ref(1);
 
-const isReviewProduct = ref(false);
-const isBuyingProduct = ref(false);
 const averageRating = ref(0);
 const categoryId = ref(0);
 
@@ -96,8 +92,10 @@ const fetchProduct = async () => {
     img_2.value = JSON.parse(product.value.product_img)[1];
     img_3.value = JSON.parse(product.value.product_img)[2];
     console.log("Product detail: ", response);
+    return response;
   } catch (error) {
     console.log(error.response);
+    throw error;
   }
 };
 
@@ -106,26 +104,6 @@ const fetchProductByCategoryId = async () => {
     const response = await productService.getProductFromCategoryId(categoryId.value);
     listProductByCategory.value = response.data;
     console.log(listProductByCategory);
-  } catch (error) {
-    console.log(error.response);
-  }
-};
-
-const fetchReviewByProduct = async () => {
-  try {
-    const response = await reviewService.getByProduct(props.productId);
-    averageRating.value = response.average_rating;
-
-  } catch (error) {
-    console.log(error.response);
-  }
-};
-
-const checkUserReviewProduct = async () => {
-  try {
-    const response = await reviewService.userHasReviewedProduct(productId.value);
-    console.log("Check user review product: ", response);
-    isReviewProduct.value = response.data;
   } catch (error) {
     console.log(error.response);
   }
@@ -143,9 +121,7 @@ onMounted(async () => {
 
       loading.value = false;
     }, 600);
-    if (Cookies.get("isUserLoggedIn") == "true") {
-      checkUserReviewProduct();
-    }
+
   });
   if (Cookies.get("isUserLoggedIn") == "true") {
     await favoriteStore.fetchListFavorite().finally(() => {
@@ -160,14 +136,15 @@ onMounted(async () => {
     Cookies.set('productAffiliateId', productId.value);
   }
 
-  fetchReviewByProduct();
   checkInStock();
 
 });
 
 const handleAddToCart = (product_id, weight) => {
-  addToCart(product_id, weight);
-  showSuccess("Thêm vào giỏ hàng thành công");
+  addToCart(product_id, weight).then(() => {
+    showSuccess("Thêm vào giỏ hàng thành công");
+  })
+
 };
 
 const handleBuyNow = (product_id, weight) => {
@@ -185,8 +162,10 @@ const addToCart = async (product_id, weight) => {
       total_weight: weight,
     });
     await cartStore.fetchCartCount();
+    return response;
   } catch (error) {
     console.log(error.response);
+    throw error;
   }
 };
 
@@ -196,10 +175,14 @@ const createFavorite = async (productId) => {
     const response = await favoriteStore.createFavorite(productId);
     if (response.status === 'created') {
       showSuccessMessage("Đã thêm vào mục yêu thích");
-      fetchProduct();
+      fetchProduct().then(() => {
+        productDetail.value = product.value.product_des.split(".");
+      });
     } else {
       showSuccessMessage("Đã xóa khỏi mục yêu thích");
-      fetchProduct();
+      fetchProduct().then(() => {
+        productDetail.value = product.value.product_des.split(".");
+      });
     }
   } catch (error) {
     console.log(error.response);
@@ -216,12 +199,14 @@ const checkBuyingProduct = async () => {
   }
 };
 
-watch(productId, () => {
-  fetchProduct();
-  fetchProductByCategoryId();
-  increaseProductViews();
-  checkUserReviewProduct();
-  checkBuyingProduct();
+watch(productId, (newVal) => {
+  if (newVal) {
+    fetchProduct().then(() => {
+      productDetail.value = product.value.product_des.split(".");
+    });
+    fetchProductByCategoryId();
+    increaseProductViews();
+  }
 });
 
 const incrementQuantity = () => {

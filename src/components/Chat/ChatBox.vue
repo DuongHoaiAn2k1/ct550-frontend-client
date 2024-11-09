@@ -1,6 +1,6 @@
 <template>
     <section class="chatbox-form">
-        <div class="container py-5" style="width: 65%; height: 60%;">
+        <div class="container py-5" style="width: 74%; height: 68%;">
 
             <div class=" row ">
                 <div class=" col-md-8 col-lg-6 col-xl-4">
@@ -17,29 +17,75 @@
                                 <p>Hãy gửi tin nhắn để được hỗ trợ</p>
                             </div>
                             <div v-for="message in messages" :key="message.message_id" class="mb-4">
+
                                 <!-- Nếu là tin nhắn của nhân viên -->
                                 <div v-if="message.sender_id != authStore.user_id"
-                                    class="d-flex flex-row justify-content-start">
-                                    <img src="../../../public/assets/images/admin/admin-img.png" alt="avatar 1"
-                                        style="width: 45px; height: 100%;">
-                                    <div class="p-3 ms-3"
-                                        style="border-radius: 15px; background-color: rgba(57, 192, 237, .2);">
-                                        <p class="small mb-0">{{ message.message }}</p>
+                                    class="d-flex flex-column align-items-start">
+                                    <div class="d-flex flex-row align-items-start">
+                                        <img src="../../../public/assets/images/admin/admin-img.png" alt="avatar 1"
+                                            style="width: 45px; height: 100%;">
+                                        <div class="p-3 ms-3"
+                                            style="border-radius: 15px; background-color: rgba(57, 192, 237, .2);">
+                                            <p class="small mb-0">{{ message.message }}</p>
+                                        </div>
                                     </div>
+
+                                    <!-- Hiển thị danh sách sản phẩm nếu tồn tại -->
+                                    <div v-if="message.products && JSON.parse(message.products).length"
+                                        class="product-list mt-2">
+                                        <div class="d-flex flex-wrap">
+                                            <div v-for="product in JSON.parse(message.products)"
+                                                :key="product.product_id" class="product-container me-2 mb-2">
+                                                <router-link class="text-decoration-none"
+                                                    :to="{ name: 'product-detail', params: { id: product.product_id } }">
+                                                    <img :src="apiUrl + product.product_img" class="product-image"
+                                                        alt="product image">
+                                                    <div class="product-info">
+                                                        <h6 class="product-name">{{ product.product_name }}</h6>
+                                                        <p class="product-price">{{
+                                                            formatCurrency(product.product_price) }}
+                                                        </p>
+                                                    </div>
+                                                </router-link>
+
+                                            </div>
+                                        </div>
+                                    </div>
+
                                 </div>
 
                                 <!-- Nếu là tin nhắn của khách hàng -->
                                 <div v-if="message.sender_id == authStore.user_id"
-                                    class="d-flex flex-row justify-content-end">
-                                    <div class="p-3 me-3 border bg-body-tertiary" style="border-radius: 15px;">
-                                        <p class="small mb-0">{{ message.message }}</p>
+                                    class="d-flex flex-column align-items-end">
+                                    <div class="d-flex flex-row align-items-end">
+                                        <div class="p-3 me-3 border bg-body-tertiary" style="border-radius: 15px;">
+                                            <p class="small mb-0">{{ message.message }}</p>
+                                        </div>
+                                        <img :src="message.sender.avatar ? message.sender.avatar : message.sender.image ? apiUrl + message.sender.image : 'https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava2-bg.webp'"
+                                            alt="avatar 1" style="width: 45px; height: 100%;">
                                     </div>
-                                    <img :src="message.sender.avatar ? message.sender.avatarProps : message.sender.image ? apiUrl + message.sender.image : 'https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava2-bg.webp'"
-                                        alt="avatar 1" style="width: 45px; height: 100%;">
+
+                                    <!-- Hiển thị danh sách sản phẩm nếu tồn tại -->
+                                    <div v-if="message.products && JSON.parse(message.products).length"
+                                        class="product-list mt-2">
+                                        <div class="d-flex flex-wrap">
+                                            <div v-for="product in JSON.parse(message.products)"
+                                                :key="product.product_id" class="product-item me-2 mb-2">
+                                                <img :src="apiUrl + product.product_img" class="product-img-top"
+                                                    alt="product image">
+                                                <div class="product-body">
+                                                    <h6 class="product-title">{{ product.product_name }}</h6>
+                                                    <p class="product-price">{{ formatCurrency(product.product_price) }}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
                                 </div>
                             </div>
-
                         </div>
+
                         <div class="d-flex">
                             <input v-model="messageSend" type="text" class="form-control" placeholder="Nhập nội dung..."
                                 @keyup.enter="handleCreateMessage"><button @click="handleCreateMessage"
@@ -63,6 +109,7 @@ import { useAuthStore } from "@/stores/auth";
 import { initializeEcho } from "../../pusher/echoConfig";
 import messageService from "@/services/message.service";
 import { avatarProps } from "element-plus";
+import { formatCurrency } from "../../helpers/UtilHelper";
 const messages = ref([]);
 const authStore = useAuthStore();
 const echoInstance = initializeEcho();
@@ -416,5 +463,46 @@ textarea.form-control {
 
 #chat1 .form-outline .form-control~.form-label {
     color: #bfbfbf;
+}
+
+.product-list .product-container {
+    width: 100px;
+    /* Giảm chiều rộng của thẻ sản phẩm */
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    background-color: #fff;
+}
+
+.product-list .product-image {
+    width: 100%;
+    height: 60px;
+    /* Giảm chiều cao của hình ảnh sản phẩm */
+    object-fit: cover;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+}
+
+.product-list .product-info {
+    padding: 0.3rem;
+    text-align: center;
+}
+
+.product-list .product-name {
+    font-size: 0.7rem;
+    /* Giảm kích thước chữ của tên sản phẩm */
+    margin-bottom: 0.2rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    /* Hiển thị dấu chấm nếu tên sản phẩm quá dài */
+}
+
+.product-list .product-price {
+    font-size: 0.65rem;
+    /* Giảm kích thước chữ của giá sản phẩm */
+    color: #555;
+    margin: 0;
 }
 </style>

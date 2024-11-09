@@ -17,12 +17,24 @@
                             <i class="bx bxs-star text-warning"></i>
                             <i class="bx bxs-star-half text-warning"></i>
                         </p>
-                        <p class="mb-0 mt-1">
-                            Giá : <span class="fw-medium">{{ (cart.product.product_promotion &&
+                        <p v-show="cart.product.batches && cart.is_promotion_batch_applied" class="mb-0 mt-1">
+                            Giá : <span class="fw-medium text-success">{{ cart.product.batches ?
+                                formatCurrency(cart.product.product_price -
+                                    cart.product.batches[0].batch_promotion[0].discount_price) :
+                                formatCurrency(cart.product.product_price) }}</span>
+                        </p>
+                        <p v-show="cart.product.product_promotion" class="mb-0 mt-1">
+                            Giá : <span class="fw-medium text-success">{{ (cart.product.product_promotion &&
                                 cart.product.product_promotion.length > 0) ?
                                 formatCurrency(cart.product.product_price -
                                     cart.product.product_promotion[0].discount_price) :
                                 formatCurrency(cart.product.product_price) }}</span>
+                        </p>
+                        <p v-show="!cart.product.product_promotion && !cart.product.batches" class="mb-0 mt-1">
+                            Giá : <span class="fw-medium">{{ formatCurrency(cart.product.product_price) }}</span>
+                        </p>
+                        <p v-show="cart.product.batches && !cart.is_promotion_batch_applied" class="mb-0 mt-1">
+                            Giá : <span class="fw-medium">{{ formatCurrency(cart.product.product_price) }}</span>
                         </p>
                     </div>
                 </div>
@@ -56,10 +68,18 @@
             <div class="col-md-2">
                 <div class="mt-1">
                     <p class="text-muted mb-3">Tổng</p>
-                    <h5>{{ (cart.product.product_promotion &&
+                    <h5 v-show="cart.product.product_promotion">{{ (cart.product.product_promotion &&
                         cart.product.product_promotion.length > 0) ?
                         formatCurrency((cart.product.product_price - cart.product.product_promotion[0].discount_price) *
                             cart.quantity) :
+                        formatCurrency(cart.product.product_price * cart.quantity) }}</h5>
+                    <h5 v-show="cart.product.batches">{{ cart.product.batches ?
+                        formatCurrency((cart.product.product_price -
+                            cart.product.batches[0].batch_promotion[0].discount_price) *
+                            cart.quantity) :
+                        formatCurrency(cart.product.product_price * cart.quantity) }}</h5>
+                    <h5 v-show="!cart.product.product_promotion && !cart.product.batches">{{
+
                         formatCurrency(cart.product.product_price * cart.quantity) }}</h5>
                 </div>
             </div>

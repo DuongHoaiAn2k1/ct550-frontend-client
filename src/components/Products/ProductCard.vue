@@ -4,9 +4,13 @@
             <router-link :to="{ name: 'product-detail', params: { id: productId } }">
                 <img :src="image" />
             </router-link>
-            <div class="price">{{ (product.product_promotion && product.product_promotion.length > 0) ?
-                formatCurrency(price -
-                    product.product_promotion[0].discount_price) : formatCurrency(product.product_price) }}</div>
+            <div class="price">{{ (product.product_promotion &&
+                product.product_promotion.length > 0) ?
+                formatCurrency(product.product_price -
+                    product.product_promotion[0].discount_price) : (product.product_quantity_batch_promotion > 0) ?
+                    formatCurrency(product.product_price - product?.batches[0].batch_promotion[0].discount_price) :
+                    formatCurrency(product.product_price)
+                }}</div>
         </div>
         <label class="favorite">
             <input type="checkbox" :checked="liked" @click="handleCreateProductLike(productId)">
@@ -25,7 +29,15 @@
                 <span v-show="product.product_promotion && product.product_promotion.length > 0" class="discount">-{{
                     product?.product_promotion[0]?.promotion?.discount_percentage }}%</span>
             </div>
-            <div v-show="!(product.product_promotion && product.product_promotion.length > 0)">
+            <div v-show="product.product_quantity_batch_promotion > 0" v-if="product.product_quantity_batch_promotion"
+                class="product-name">
+                <span v-show="product.product_quantity_batch_promotion > 0" class="original-price">{{
+                    formatCurrency(product.product_price) }}</span>
+                <span v-show="product.product_quantity_batch_promotion > 0" class="discount">-{{
+                    product?.batches[0].batch_promotion[0]?.promotion?.discount_percentage }}%</span>
+            </div>
+            <div
+                v-show="!(product.product_promotion && product.product_promotion.length > 0) && product.product_quantity_batch_promotion == 0">
                 <span style="color: white;">0</span>
                 <span style="color: white;"> 0</span>
             </div>

@@ -1,7 +1,7 @@
 <template>
     <div class="container bootstrap snippets bootdey">
         <!-- Review Form -->
-        <div v-show="!isReviewProduct && isBuyingProduct" class="row mt-2">
+        <div v-show="!isReviewProduct && isBuyingProduct == true" class="row mt-2">
             <div class="col-3"></div>
             <div class="col-6">
                 <h2>Cho chúng tôi xin đánh giá về sản phẩm</h2>
@@ -85,20 +85,27 @@
 </template>
 
 <script setup>
+import Cookies from "js-cookie";
 import { computed, onMounted, ref, watch } from "vue";
 import reviewService from "@/services/review.service";
 import { showSuccess } from "@/helpers/NotificationHelper";
 import { showSuccessMessage } from "@/helpers/NotificationHelper";
 import { convertTime } from "@/helpers/UtilHelper";
 import { initializeEcho } from "../../pusher/echoConfig";
+import order_detailService from "@/services/order_detail.service";
 import {
     Edit,
 } from '@element-plus/icons-vue'
 import { useAuthStore } from "@/stores/auth";
+import { useRoute } from "vue-router";
 
+const route = useRoute();
 const authStore = useAuthStore();
 const userId = computed(() => authStore.user_id);
 const echoInstance = initializeEcho();
+const productIdReview = computed(() => (route.params.id));
+const isReviewProduct = ref(false);
+const isBuyingProduct = ref(false);
 
 echoInstance.channel('user-channel')
     .listen('.review.reply-comment', (event) => {
@@ -106,21 +113,13 @@ echoInstance.channel('user-channel')
     });
 // Define props
 const props = defineProps({
-    isReviewProduct: {
-        type: Boolean,
-        required: true
-    },
-    isBuyingProduct: {
-        type: Boolean,
-        required: true
-    },
     productId: {
         type: Number,
         required: true
     }
 });
 
-const emit = defineEmits(["checkUserReviewProduct", "checkBuyingProduct", "fetchProduct"]);
+const emit = defineEmits(["fetchProduct"]);
 
 const editReview = ref(false);
 const rateComment = ref();
@@ -134,14 +133,14 @@ const currentReviewEdit = ref({
     rating: 0,
     comment: "",
 });
-const fetchReviewByProduct = async () => {
+const fetchReviewByProduct = async (id = productIdReview.value) => {
     try {
-        const response = await reviewService.getByProduct(props.productId);
+        const response = await reviewService.getByProduct(productIdReview.value);
         listCommentReview.value = response.data;
         dataReviewByProductLength.value = response.length || 0;
         console.log("Fetch review by product: ", response);
     } catch (error) {
-        console.log(error.response);
+        // console.log(error.response);
     }
 };
 
@@ -151,11 +150,11 @@ const listCommentPagination = computed(() => {
 });
 
 const handleComment = () => {
-    createComment(props.productId, rateComment.value, commentValue.value).then(() => {
+    createComment(productIdReview.value, rateComment.value, commentValue.value).then(() => {
         fetchReviewByProduct();
         showSuccess("Cảm ơn bạn đã đánh giá");
-        emit("checkUserReviewProduct");
-        emit("checkBuyingProduct");
+        // emit("checkUserReviewProduct");
+        // emit("checkBuyingProduct");
         emit("fetchProduct");
     });
 
@@ -205,15 +204,51 @@ const handleUpdateComment = async () => {
     }
 };
 
+const checkUserReviewProduct = async () => {
+    try {
+        const response = await reviewService.userHasReviewedProduct(productIdReview.value);
+        console.log("Check user review product: ", response);
+        isReviewProduct.value = response.data;
+    } catch (error) {
+        console.log(error.response);
+    }
+};
+
+const checkBuyingProduct = async () => {
+    try {
+        const response = await order_detailService.checkUserPurchasedProduct(productIdReview.value);
+        isBuyingProduct.value = response.message;
+        console.log("Check buying product: ", response);
+    } catch (error) {
+        console.log(error.response);
+    }
+};
+
 
 onMounted(() => {
     fetchReviewByProduct();
+
+    if (Cookies.get("isUserLoggedIn") == "true") {
+        checkUserReviewProduct();
+        checkBuyingProduct();
+    }
+});
+
+watch(productIdReview, (newVal) => {
+    if (newVal) {
+        fetchReviewByProduct();
+        if (Cookies.get("isUserLoggedIn") == "true") {
+            checkUserReviewProduct();
+            checkBuyingProduct();
+        }
+    }
 });
 
 const handleCurrentChange = (val) => {
     currentPage.value = val;
     console.log(`current page: ${val}`);
 };
+
 </script>
 
 <style scoped>

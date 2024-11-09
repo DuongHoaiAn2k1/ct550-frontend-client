@@ -34,6 +34,7 @@
                                             {{ data.address }} {{ data.commue }} {{ data.district }} {{ data.city }} -
                                             {{ data.name }} - {{ data.phone }}
                                         </option>
+                                        <option value="-2">Thêm địa chỉ</option>
                                     </select>
                                     <p class="text-center"><span class="text-danger">{{ addressError }}</span></p>
                                 </td>
