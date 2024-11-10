@@ -41,6 +41,7 @@
 import { ref } from 'vue';
 import debounce from 'lodash/debounce';
 import searchService from '../../services/search.service';
+import productService from '../../services/product.service';
 import { useRouter } from 'vue-router';
 
 const router = useRouter();
@@ -52,7 +53,9 @@ const haveResult = ref(false);
 const querySearchAsync = debounce(async (queryString, cb) => {
     if (queryString) {
         try {
-            const response = await searchService.search(queryString);
+            const response = await productService.searchAiMini({
+                query: queryString
+            });
             products.value = response.data;
             console.log("Search data: ", products.value);
             let results = [];
