@@ -13,15 +13,15 @@ export default defineConfig({
     },
   },
   server: {
-    host: 'client.dacsancamau.com',
-    port: 3001,
+    host: 'client.luanvantotnghiep.io.vn',
+    port: 443,
     https: {
-      key: fs.readFileSync(path.resolve(__dirname, 'ssl/selfsigned.key')),
-      cert: fs.readFileSync(path.resolve(__dirname, 'ssl/selfsigned.crt')),
+      key: fs.readFileSync('/etc/letsencrypt/live/luanvantotnghiep.io.vn/privkey.pem'),
+      cert: fs.readFileSync('/etc/letsencrypt/live/luanvantotnghiep.io.vn/fullchain.pem'),
     },
     proxy: {
       "/api": {
-        target: "https://dacsancamau.com/",
+        target: "https://luanvantotnghiep.io.vn:8443",
         changeOrigin: true,
         secure: false,
       },
