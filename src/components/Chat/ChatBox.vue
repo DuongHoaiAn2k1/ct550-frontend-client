@@ -126,9 +126,9 @@ const emit = defineEmits(['toggleChat']);
 
 echoInstance.channel(`chat.${userId.value}`).listen('.message.sent', async (event) => {
     // const response = await notificationStore.getAll();
-    if (props.isChatVisible) {
-        handleFetchMessageUser();
-    }
+    // if (props.isChatVisible) {
+    handleFetchMessageUser();
+    // }
     handleCountUnRead().then(() => {
         emit('value-changed', countUnRead.value);
     });

@@ -153,6 +153,10 @@ const handleComment = () => {
     createComment(productIdReview.value, rateComment.value, commentValue.value).then(() => {
         fetchReviewByProduct();
         showSuccess("Cảm ơn bạn đã đánh giá");
+        if (Cookies.get("isUserLoggedIn") == "true") {
+            checkUserReviewProduct();
+            checkBuyingProduct();
+        }
         // emit("checkUserReviewProduct");
         // emit("checkBuyingProduct");
         emit("fetchProduct");
@@ -192,7 +196,13 @@ const handleUpdateComment = async () => {
         });
 
         showSuccessMessage("Cập nhật thành công");
-        fetchReviewByProduct();
+        setTimeout(() => {
+            fetchReviewByProduct();
+            if (Cookies.get("isUserLoggedIn") == "true") {
+                checkUserReviewProduct();
+                checkBuyingProduct();
+            }
+        }, 2500);
         emit("fetchProduct");
         editReview.value = false;
         // console.log(response);
