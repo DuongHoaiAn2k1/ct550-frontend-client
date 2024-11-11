@@ -5,13 +5,13 @@
                 <div id="carouselExampleControls" class="carousel slide" data-bs-ride="carousel">
                     <div class="carousel-inner">
                         <div class="carousel-item active">
-                            <img class="d-block w-100" :src="'http://dacsancamau.com/storage/' + img_1" />
+                            <img class="d-block w-100" :src="apiUrl + img_1" />
                         </div>
                         <div class="carousel-item">
-                            <img class="d-block w-100" :src="'http://dacsancamau.com/storage/' + img_2" alt="..." />
+                            <img class="d-block w-100" :src="apiUrl + img_2" alt="..." />
                         </div>
                         <div class="carousel-item">
-                            <img class="d-block w-100" :src="'http://dacsancamau.com/storage/' + img_3" alt="..." />
+                            <img class="d-block w-100" :src="apiUrl + img_3" alt="..." />
                         </div>
                     </div>
                     <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleControls"
@@ -118,6 +118,7 @@ import Cookies from 'js-cookie';
 import { onMounted, ref } from 'vue';
 import { toRefs } from 'vue';
 const atob = (str) => window.atob(str);
+const apiUrl = import.meta.env.VITE_APP_API_URL;
 const productPrice = ref(0);
 const averageRating = ref(0);
 const props = defineProps({
