@@ -5,8 +5,8 @@
                 <div v-for="product in listProductByCategory" :key="product.product_id" class="scrollbar-demo-item">
                     <div class="card h-70 shadow-sm mb-3">
                         <router-link :to="{ name: 'product-detail', params: { id: product.product_id } }">
-                            <img :src="'http://dacsancamau.com/storage/' + JSON.parse(product.product_img)[0]"
-                                class="card-img-top-2" alt="product.title" />
+                            <img :src="apiUrl + JSON.parse(product.product_img)[0]" class="card-img-top-2"
+                                alt="product.title" />
                         </router-link>
                         <div class="card-body">
                             <h5 style="margin-bottom: 0px" class="card-title">
@@ -25,7 +25,7 @@
 </template>
 
 <script setup>
-
+const apiUrl = import.meta.env.VITE_APP_API_URL;
 // Define props
 const props = defineProps({
     listProductByCategory: {
