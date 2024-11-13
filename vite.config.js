@@ -3,7 +3,6 @@ import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
 import fs from "fs";
 import path from "path";
-
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [vue()],
@@ -13,15 +12,15 @@ export default defineConfig({
     },
   },
   server: {
-    host: 'client.luanvantotnghiep.io.vn',
-    port: 443,
+    host: 'client.dacsancamau.com',
+    port: 3001,
     https: {
-      key: fs.readFileSync('/etc/letsencrypt/live/luanvantotnghiep.io.vn/privkey.pem'),
-      cert: fs.readFileSync('/etc/letsencrypt/live/luanvantotnghiep.io.vn/fullchain.pem'),
+      key: fs.readFileSync(path.resolve(__dirname, 'ssl/selfsigned.key')),
+      cert: fs.readFileSync(path.resolve(__dirname, 'ssl/selfsigned.crt')),
     },
     proxy: {
       "/api": {
-        target: "https://luanvantotnghiep.io.vn:8443",
+        target: "https://dacsancamau.com/",
         changeOrigin: true,
         secure: false,
       },
