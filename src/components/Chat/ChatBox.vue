@@ -22,7 +22,11 @@
                                 <div v-if="message.sender_id != authStore.user_id"
                                     class="d-flex flex-column align-items-start">
                                     <div class="d-flex flex-row align-items-start">
-                                        <img src="../../../public/assets/images/admin/admin-img.png" alt="avatar 1"
+                                        <img v-show="!message.is_bot"
+                                            src="../../../public/assets/images/admin/admin-img.png" alt="avatar 1"
+                                            style="width: 45px; height: 100%;">
+                                        <img v-show="message.is_bot"
+                                            src="../../../public/assets/images/admin/bot-ai.webp" alt="avatar 1"
                                             style="width: 45px; height: 100%;">
                                         <div class="p-3 ms-3"
                                             style="border-radius: 15px; background-color: rgba(57, 192, 237, .2);">
@@ -85,8 +89,20 @@
                                 </div>
                             </div>
                         </div>
-
-                        <div class="d-flex">
+                        <div v-if="isTyping" class="typing-indicator d-flex align-items-center mt-2">
+                            <div class="dots">
+                                <span class="design-dot">🔵</span><span class="design-dot">🔵</span><span
+                                    class="design-dot">🔵</span>
+                            </div>
+                        </div>
+                        <div v-if="isChatWithBot == true" class="d-flex">
+                            <input v-model="messageSend" type="text" class="form-control" placeholder="Nhập nội dung..."
+                                @keyup.enter="handleSendToChatBot"><button @click="handleSendToChatBot"
+                                class="btn btn-primary">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                        <div v-if="isChatWithBot == false" class="d-flex">
                             <input v-model="messageSend" type="text" class="form-control" placeholder="Nhập nội dung..."
                                 @keyup.enter="handleCreateMessage"><button @click="handleCreateMessage"
                                 class="btn btn-primary">
@@ -108,7 +124,7 @@ import { onMounted, ref, computed, watch } from "vue";
 import { useAuthStore } from "@/stores/auth";
 import { initializeEcho } from "../../pusher/echoConfig";
 import messageService from "@/services/message.service";
-import { avatarProps } from "element-plus";
+import Cookies from "js-cookie";
 import { formatCurrency } from "../../helpers/UtilHelper";
 const messages = ref([]);
 const authStore = useAuthStore();
@@ -120,18 +136,22 @@ const props = defineProps({
     isChatVisible: Boolean,
 });
 const apiUrl = import.meta.env.VITE_APP_API_URL;
-
+const isTyping = ref(false);
 const emit = defineEmits(['toggleChat']);
-
+const isChatWithBot = ref(true);
 
 echoInstance.channel(`chat.${userId.value}`).listen('.message.sent', async (event) => {
     // const response = await notificationStore.getAll();
     // if (props.isChatVisible) {
-    handleFetchMessageUser();
-    // }
-    handleCountUnRead().then(() => {
-        emit('value-changed', countUnRead.value);
-    });
+    isTyping.value = true;
+    setTimeout(() => {
+        handleFetchMessageUser();
+        // }
+        isTyping.value = false;
+        handleCountUnRead().then(() => {
+            emit('value-changed', countUnRead.value);
+        });
+    }, 500);
 });
 
 const handleCountUnRead = async () => {
@@ -147,13 +167,43 @@ const handleCreateMessage = async () => {
     try {
         const response = await messageService.create({
             message: messageSend.value,
-            sender_id: authStore.user_id
+            // sender_id: authStore.user_id
         });
         messageSend.value = "";
         handleFetchMessageUser();
         handleCountUnRead().then(() => {
             emit('value-changed', countUnRead.value);
         });
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+const handleSendToChatBot = async () => {
+    try {
+        const response = await messageService.sendToChatBot({
+            message: messageSend.value,
+        });
+        messageSend.value = "";
+        isTyping.value = true;
+        setTimeout(() => {
+            isTyping.value = false;
+            handleFetchMessageUser();
+            handleCountUnRead().then(() => {
+                emit('value-changed', countUnRead.value);
+            });
+
+            console.log("Message: ", response);
+            if (response.data == "Vui lòng đợi trong giây lát. Yêu cầu đã được chuyển đến nhân viên." || response.data == "Xin lỗi, tôi không hiểu yêu cầu của bạn. Vui lòng đợi trong giây lát, chúng tôi sẽ chuyển bạn đến nhân viên hỗ trợ.") {
+                Cookies.set("communicate_with_bot", "false");
+                isChatWithBot.value = false;
+            }
+
+            if (response.data[0].text == "Xin lỗi, tôi không hiểu yêu cầu của bạn. Vui lòng đợi trong giây lát, chúng tôi sẽ chuyển bạn đến nhân viên hỗ trợ." || response.data[0].text == "Vui lòng đợi trong giây lát. Yêu cầu đã được chuyển đến nhân viên.") {
+                Cookies.set("communicate_with_bot", "false");
+                isChatWithBot.value = false;
+            }
+        }, 500);
     } catch (error) {
         console.log(error);
     }
@@ -194,6 +244,7 @@ onMounted(() => {
         handleFetchMessageUser();
     }
 
+    isChatWithBot.value = Cookies.get("communicate_with_bot") == "true" ? true : false;
 })
 </script>
 
@@ -504,5 +555,35 @@ textarea.form-control {
     /* Giảm kích thước chữ của giá sản phẩm */
     color: #555;
     margin: 0;
+}
+
+.design-dot {
+    color: #39c0ed;
+    margin-left: 4px;
+}
+
+.typing-indicator .dots span {
+    display: inline-block;
+    animation: blink 1.4s infinite;
+}
+
+.typing-indicator .dots span:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.typing-indicator .dots span:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+@keyframes blink {
+
+    0%,
+    100% {
+        opacity: 0;
+    }
+
+    50% {
+        opacity: 1;
+    }
 }
 </style>

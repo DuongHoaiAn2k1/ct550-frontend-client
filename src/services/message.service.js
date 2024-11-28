@@ -28,6 +28,10 @@ class MessageService {
     async getAllUser() {
         return (await this.api.get("/user/all")).data;
     }
+
+    async sendToChatBot(data) {
+        return (await this.api.post("/send-to-chatbot", data)).data;
+    }
 }
 
 export default new MessageService()

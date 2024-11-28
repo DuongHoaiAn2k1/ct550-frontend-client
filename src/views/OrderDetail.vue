@@ -28,7 +28,7 @@
                   Chi tiết đơn hàng
                 </p>
                 <p class="small text-muted mb-0">
-                  Mã đơn hàng : #{{ order.bill_id }}
+                  Mã đơn hàng : {{ order.bill_id }}
                 </p>
               </div>
               <div class="d-flex justify-content-between align-items-center mb-4">
@@ -132,7 +132,7 @@
                 </p>
                 <p class="text-muted mb-0">
                   <span class="fw-bold me-4">Điểm dùng</span>
-                  - {{ order.point_used_order }} (
+                  - {{ order.point_used_order }} ( -
                   {{ formatCurrency(order.point_used_order * 1000) }})
                 </p>
               </div>
@@ -203,7 +203,7 @@
                 TỔNG TIỀN:
                 <span class="h2 mb-0 ms-2">{{
                   formatCurrency(order.total_cost)
-                }}</span>
+                  }}</span>
               </h5>
             </div>
           </div>

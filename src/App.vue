@@ -16,6 +16,7 @@ import { useAuthStore } from "@/stores/auth";
 import { useFavoriteStore } from "@/stores/favorite";
 import { useProductStore } from "@/stores/product";
 import { useCategoryStore } from "@/stores/category";
+import Cookies from "js-cookie";
 
 const number = ref(0);
 
@@ -44,6 +45,7 @@ const updateShrimpListWithLikes = () => {
   });
 };
 onMounted(async () => {
+  Cookies.set("communicate_with_bot", "true");
   if (categoryStore.listCategory.lenght == 0) {
     await categoryStore.fetchListCategory();
   }

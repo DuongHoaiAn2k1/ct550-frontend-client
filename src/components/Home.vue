@@ -16,7 +16,10 @@
     </div>
 
   </div>
-
+  <div class="container">
+    <ProductTitleCard title="Sản phẩm bán chạy" :product="productStore.listTopSelling"
+      @handleCreateProductLike="handleCreateProductLike" />
+  </div>
   <div class="container">
     <ProductTitleCard title="Khô cá Cà Mau" :product="productStore.fishList"
       @handleCreateProductLike="handleCreateProductLike" />
@@ -74,8 +77,16 @@ const handleCreateProductLike = async (productId) => {
     const response = await favoriteStore.createFavorite(productId);
     if (response.status === 'created') {
       showSuccessMessage("Đã thêm vào mục yêu thích");
+      await productStore.fetchListFish();
+      await productStore.fetchListShrimp()
+      await productStore.fetchListShrimpCrack();
+      await productStore.fetchListTopSelling();
     } else {
       showSuccessMessage("Đã xóa khỏi mục yêu thích");
+      await productStore.fetchListFish();
+      await productStore.fetchListShrimp()
+      await productStore.fetchListShrimpCrack();
+      await productStore.fetchListTopSelling();
     }
   } catch (error) {
     console.log(error.response);
@@ -100,6 +111,7 @@ onMounted(async () => {
   await productStore.fetchListFish();
   await productStore.fetchListShrimp()
   await productStore.fetchListShrimpCrack();
+  await productStore.fetchListTopSelling();
 
   if (searchStore.dataSearch) {
     fetchProductFromName(searchStore.dataSearch);

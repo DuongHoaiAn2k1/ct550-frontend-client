@@ -80,12 +80,12 @@
                       <div class="task-box rounded-3">
                         <div class="card-body">
                           <div class="row align-item-center">
-                            <div class="">Mã đơn hàng:</div>
+                            <div class="ms-1">Mã đơn hàng:</div>
                           </div>
                           <div class="row align-items-center">
                             <div class="col-xl-3 col-md-6">
-                              <div class="font-size-15">
-                                <label class="form-check-label task-title" for="customChat">#{{ data.bill_id
+                              <div class="font-size-15 ms-1">
+                                <label class="form-check-label task-title" for="customChat">{{ data.bill_id
                                   }}</label>
                               </div>
                             </div>

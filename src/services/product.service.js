@@ -58,6 +58,10 @@ class ProductService {
   async searchAi(data) {
     return (await this.api.post("/search-ai/query", data)).data;
   }
+
+  async getListTopSelling() {
+    return (await this.api.get("/list/top-selling/all")).data;
+  }
 }
 
 export default new ProductService();

@@ -7,6 +7,7 @@ export const useProductStore = defineStore("product", {
     fishList: [],
     shrimpList: [],
     shrimpCrackList: [],
+    listTopSelling: [],
   }),
   actions: {
     //Lay danh sach tat ca san  pham
@@ -49,6 +50,16 @@ export const useProductStore = defineStore("product", {
         });
         this.shrimpList = response.data.slice(0, 5);
         // console.log("Tôm: ", response);
+      } catch (error) {
+        console.log(error.response);
+      }
+    },
+
+    async fetchListTopSelling() {
+      try {
+        const response = await productService.getListTopSelling();
+        this.listTopSelling = response.data;
+        // console.log("Top selling: ", response);
       } catch (error) {
         console.log(error.response);
       }
