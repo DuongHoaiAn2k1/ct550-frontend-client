@@ -24,6 +24,9 @@
                     Hết Hàng
                 </p> -->
             </div>
+            <div v-show="listProduct.length == 0" class="text-center my-5">
+                <p style="font-size: 30px;">Không tìm thấy!</p>
+            </div>
         </div>
         <div class="text-center my-5">
             <LoadingSpinner :loading="loading" :spinnerStyle="spinnerStyle" :spinnerDelay1="spinnerDelay1"

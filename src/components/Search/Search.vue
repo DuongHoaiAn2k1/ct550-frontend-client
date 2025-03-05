@@ -10,7 +10,8 @@
                 <div v-show="haveResult" class="suggestion-item mt-2">
                     <img :src="apiUrl + item.image" alt="Product Image" class="product-image me-2" width="40" />
                     <span class="ms-2 me-2">{{ item.value }}</span>
-                    <router-link :to="{ name: 'product-detail', params: { id: item.id } }">Đi đến</router-link>
+                    <router-link v-if="item.id" :to="{ name: 'product-detail', params: { id: item.id } }">Đi
+                        đến</router-link>
                 </div>
             </template>
 
